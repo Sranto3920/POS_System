@@ -1,0 +1,101 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ title }} — POS System{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}
+<p class="topbar-subtitle mb-0">
+    <a href="{{ url_for('users.users_index') }}" class="text-decoration-none">
+        <i class="bi bi-arrow-left"></i> Back to User Management
+    </a>
+</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="panel-card">
+            <div class="panel-header">
+                <h6 class="panel-title mb-0">
+                    <i class="bi bi-{{ 'person-plus' if not is_edit else 'person-gear' }}"></i>
+                    {{ title }}
+                </h6>
+            </div>
+            <div class="panel-body">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+                    {% if password_form %}
+                        {{ password_form.hidden_tag() }}
+                    {% endif %}
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.full_name.label(class="form-label") }}
+                                {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+                                {% for error in form.full_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                {% for error in form.email.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="Optional") }}
+                                {% for error in form.phone.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.role.label(class="form-label") }}
+                                {{ form.role(class="form-select" + (" is-invalid" if form.role.errors else "")) }}
+                                {% for error in form.role.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if password_form %}
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ password_form.password.label(class="form-label") }}
+                                {{ password_form.password(class="form-control" + (" is-invalid" if password_form.password.errors else "")) }}
+                                {% for error in password_form.password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ password_form.confirm_password.label(class="form-label") }}
+                                {{ password_form.confirm_password(class="form-control" + (" is-invalid" if password_form.confirm_password.errors else "")) }}
+                                {% for error in password_form.confirm_password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2 mt-2">
+                        <button type="submit" class="btn btn-primary">{{ submit_label }}</button>
+                        <a href="{{ url_for('users.users_index') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+<header class="topbar">
+    <div class="topbar-left">
+        <button class="btn btn-link sidebar-toggle" id="sidebarToggle" type="button" aria-label="Toggle sidebar">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+        <div>
+            <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            {% block page_subtitle %}{% endblock %}
+        </div>
+    </div>
+
+    <div class="topbar-right">
+        {% if current_shop %}
+        <span class="topbar-shop-badge d-none d-lg-inline">
+            <i class="bi bi-shop"></i> {{ current_shop.shop_name }}
+        </span>
+        {% endif %}
+        <span class="topbar-date d-none d-md-inline">
+            <i class="bi bi-calendar3"></i>
+            {{ now().strftime('%A, %b %d, %Y') if now is defined else '' }}
+        </span>
+        <div class="topbar-user">
+            <div class="topbar-avatar">{{ current_user.full_name[:1] }}</div>
+            <div class="d-none d-sm-block">
+                <div class="topbar-name">{{ current_user.full_name }}</div>
+                <div class="topbar-role">{{ current_user.role_label }}</div>
+            </div>
+        </div>
+    </div>
+</header>

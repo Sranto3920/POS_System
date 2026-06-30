@@ -1,0 +1,60 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Purchases — POS System{% endblock %}
+{% block page_title %}Purchases{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0">Stock purchases from suppliers</p>{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div></div>
+    <a href="{{ url_for('purchases.new') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg"></i> New Purchase
+    </a>
+</div>
+
+<div class="panel-card">
+    <div class="panel-header d-flex justify-content-between align-items-center">
+        <h6 class="panel-title mb-0"><i class="bi bi-cart-plus"></i> Purchase History</h6>
+        <span class="badge bg-secondary">{{ pagination.total }} total</span>
+    </div>
+    <div class="panel-body">
+        {% include "partials/search_form.html" %}
+
+        <div class="table-responsive">
+            <table class="table table-hover dashboard-table mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Supplier</th>
+                        <th>Recorded By</th>
+                        <th class="text-end">Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in purchases %}
+                    <tr>
+                        <td>{{ purchase.id }}</td>
+                        <td>{{ purchase.purchase_date.strftime('%b %d, %Y %I:%M %p') if purchase.purchase_date else '—' }}</td>
+                        <td>{{ purchase.supplier.name if purchase.supplier else '—' }}</td>
+                        <td>{{ purchase.user.full_name if purchase.user else '—' }}</td>
+                        <td class="text-end">{{ format_currency(purchase.total_amount) }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('purchases.view', purchase_id=purchase.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No purchases found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% set extra_args = extra_args|default({}) %}
+        {% include "partials/pagination.html" %}
+    </div>
+</div>
+{% endblock %}

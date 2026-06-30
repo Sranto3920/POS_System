@@ -1,0 +1,149 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Sale #{{ sale.id }} — POS System{% endblock %}
+{% block page_title %}Sale #{{ sale.id }}{% endblock %}
+{% block page_subtitle %}
+<p class="topbar-subtitle mb-0">{{ sale.sale_date.strftime('%b %d, %Y %I:%M %p') if sale.sale_date else '' }}</p>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Customer</h6></div>
+            <div class="panel-body">
+                <div class="fw-semibold">{{ sale.customer.name if sale.customer else '—' }}</div>
+                {% if sale.customer and sale.customer.phone %}
+                <div class="text-muted small">{{ sale.customer.phone }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Cashier</h6></div>
+            <div class="panel-body">
+                <div class="fw-semibold">{{ sale.user.full_name if sale.user else '—' }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Total</h6></div>
+            <div class="panel-body">
+                <div class="fs-5 fw-bold text-primary">{{ format_currency(sale.total_amount) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Paid</h6></div>
+            <div class="panel-body">
+                <div class="fs-5 fw-bold text-success">{{ format_currency(paid_total) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Status</h6></div>
+            <div class="panel-body">
+                {% if sale.payment_status == 'Paid' %}
+                <span class="badge bg-success">Paid</span>
+                {% elif sale.payment_status == 'Partially Paid' %}
+                <span class="badge bg-warning text-dark">Partially Paid</span>
+                {% else %}
+                <span class="badge bg-danger">Due</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="panel-card">
+            <div class="panel-header">
+                <h6 class="panel-title mb-0"><i class="bi bi-list-ul"></i> Line Items</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover dashboard-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Discount</th>
+                            <th class="text-end">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for detail in sale.details %}
+                        <tr>
+                            <td>{{ detail.product.name if detail.product else '—' }}</td>
+                            <td class="text-end">{{ detail.quantity }}</td>
+                            <td class="text-end">{{ format_currency(detail.selling_price) }}</td>
+                            <td class="text-end">{{ format_currency(detail.discount or 0) }}</td>
+                            <td class="text-end">{{ format_currency(detail.subtotal) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No line items.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="4" class="text-end">Total</th>
+                            <th class="text-end">{{ format_currency(sale.total_amount) }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="panel-card">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <h6 class="panel-title mb-0"><i class="bi bi-credit-card"></i> Payments</h6>
+                {% if balance_due > 0 %}
+                <a href="{{ url_for('payments.record') }}?sale_id={{ sale.id }}" class="btn btn-outline-primary btn-sm">Record Payment</a>
+                {% endif %}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover dashboard-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Method</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.payment_date.strftime('%b %d, %Y') if payment.payment_date else '—' }}</td>
+                            <td>{{ payment.payment_method }}</td>
+                            <td class="text-end">{{ format_currency(payment.paid_amount) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4">No payments recorded.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3 d-flex gap-2">
+    <a href="{{ url_for('sales.sales_index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Sales
+    </a>
+    <a href="{{ url_for('sales.sales_new') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg"></i> New Sale
+    </a>
+</div>
+{% endblock %}

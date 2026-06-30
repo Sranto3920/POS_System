@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>{% block title %}POS System{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('dashboard.dashboard') }}">POS System</a>
+
+        {% if current_user.is_authenticated %}
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('pos.index') }}">POS</a>
+                </li>
+                {% if current_user.has_role('manager', 'admin') %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('manager.index') }}">Manager</a>
+                </li>
+                {% endif %}
+                {% if current_user.has_role('admin') %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.index') }}">Admin</a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <div class="d-flex align-items-center gap-3">
+                <span class="navbar-text text-light small">
+                    {{ current_user.full_name }}
+                    <span class="badge bg-secondary">{{ current_user.role_label }}</span>
+                </span>
+                <form action="{{ url_for('auth.logout') }}" method="POST" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</nav>
+
+<div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

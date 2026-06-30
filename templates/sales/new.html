@@ -1,0 +1,133 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}New Sale — POS System{% endblock %}
+{% block page_title %}New Sale{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0">Process a customer sale</p>{% endblock %}
+
+{% block content %}
+<div class="panel-card">
+    <div class="panel-header">
+        <h6 class="panel-title mb-0"><i class="bi bi-receipt"></i> Sale Details</h6>
+    </div>
+    <div class="panel-body">
+        <form method="POST" id="sale-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-5">
+                    <label for="customer_id" class="form-label">Customer <span class="text-danger">*</span></label>
+                    <select name="customer_id" id="customer_id" class="form-select" required>
+                        <option value="">Select customer...</option>
+                        {% for customer in customers %}
+                        <option value="{{ customer.id }}" {% if customer.id == walkin_customer_id %}selected{% endif %}>{{ customer.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text" id="customer-due-hint">Select a registered customer to allow due payments.</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="payment_method" class="form-label">Payment Method <span class="text-danger">*</span></label>
+                    <select name="payment_method" id="payment_method" class="form-select" required>
+                        {% for method in payment_methods %}
+                        <option value="{{ method }}" {% if method == 'Cash' %}selected{% endif %}>{{ method }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4 position-relative">
+                <label for="product-search" class="form-label">Search Product</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" id="product-search" class="form-control" placeholder="Search by name, barcode, or SKU..." autocomplete="off">
+                </div>
+                <div id="product-search-results" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; max-height: 280px; overflow-y: auto;"></div>
+            </div>
+
+            <h6 class="mb-3">Cart</h6>
+            <div class="table-responsive mb-3">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th style="min-width: 200px;">Product</th>
+                            <th style="width: 100px;">Quantity</th>
+                            <th style="width: 130px;">Market Price</th>
+                            <th style="width: 110px;">Discount</th>
+                            <th style="width: 110px;" class="text-end">Total</th>
+                            <th style="width: 60px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="line-items-body"></tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="4" class="text-end">Grand Total</th>
+                            <th class="text-end" id="sale-total">৳0.00</th>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <th colspan="4" class="text-end">Paid Amount</th>
+                            <th class="text-end">
+                                <input type="number" name="paid_amount" id="paid_amount" class="form-control form-control-sm text-end" min="0" step="0.01" value="0">
+                            </th>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <th colspan="4" class="text-end">Due Amount</th>
+                            <th class="text-end" id="due-amount">৳0.00</th>
+                            <th></th>
+                        </tr>
+                        <tr>
+                            <th colspan="4" class="text-end">Payment Status</th>
+                            <th class="text-end"><span id="payment-status" class="badge bg-success">Paid</span></th>
+                            <th></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div id="empty-cart-message" class="alert alert-light border mb-4">
+                <i class="bi bi-info-circle"></i> Search and select products to add them to the cart.
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary" id="complete-sale-btn" disabled>Complete Sale</button>
+                <a href="{{ url_for('sales.sales_index') }}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<template id="line-item-template">
+    <tr class="line-item-row" data-product-id="">
+        <td>
+            <input type="hidden" name="product_id[]" class="product-id-input" value="">
+            <div class="fw-semibold product-name-label"></div>
+            <div class="text-muted small product-meta-label"></div>
+        </td>
+        <td>
+            <input type="number" name="quantity[]" class="form-control form-control-sm quantity-input" min="1" value="1" required>
+        </td>
+        <td>
+            <input type="number" name="selling_price[]" class="form-control form-control-sm price-input" min="0" step="0.01" required>
+        </td>
+        <td>
+            <input type="number" name="discount[]" class="form-control form-control-sm discount-input" min="0" step="0.01" value="0">
+        </td>
+        <td class="text-end line-subtotal">—</td>
+        <td>
+            <button type="button" class="btn btn-outline-danger btn-sm remove-line" title="Remove line">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    window.SALE_FORM_CONFIG = {
+        searchUrl: {{ url_for('sales.search_products') | tojson }},
+        walkinCustomerId: {{ walkin_customer_id }}
+    };
+</script>
+<script src="{{ url_for('static', filename='js/sale_form.js') }}"></script>
+{% endblock %}

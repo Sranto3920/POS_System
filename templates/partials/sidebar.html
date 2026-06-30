@@ -1,0 +1,109 @@
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <i class="bi bi-shop"></i>
+        <div class="sidebar-brand-text">
+            <span class="sidebar-brand-title">POS System</span>
+            {% if current_shop %}
+            <span class="sidebar-brand-shop">{{ current_shop.shop_name }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="sidebar-label">Main</div>
+        <a href="{{ url_for('dashboard.dashboard') }}"
+           class="sidebar-link {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <div class="sidebar-label">Inventory</div>
+        <a href="{{ url_for('categories.categories_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}">
+            <i class="bi bi-folder2"></i>
+            <span>Categories</span>
+        </a>
+        <a href="{{ url_for('products.products_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('products.') %}active{% endif %}">
+            <i class="bi bi-box-seam"></i>
+            <span>Products</span>
+        </a>
+        <a href="{{ url_for('suppliers.suppliers_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('suppliers.') %}active{% endif %}">
+            <i class="bi bi-truck"></i>
+            <span>Suppliers</span>
+        </a>
+
+        <div class="sidebar-label">People</div>
+        <a href="{{ url_for('customers.customers_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('customers.') %}active{% endif %}">
+            <i class="bi bi-people"></i>
+            <span>Customers</span>
+        </a>
+
+        <div class="sidebar-label">Transactions</div>
+        <a href="{{ url_for('purchases.purchases_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('purchases.') %}active{% endif %}">
+            <i class="bi bi-cart-plus"></i>
+            <span>Purchases</span>
+        </a>
+        <a href="{{ url_for('sales.sales_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('sales.') and request.endpoint != 'sales.sales_new' %}active{% endif %}">
+            <i class="bi bi-receipt"></i>
+            <span>Sales</span>
+        </a>
+        <a href="{{ url_for('sales.sales_new') }}"
+           class="sidebar-link {% if request.endpoint == 'sales.sales_new' %}active{% endif %}">
+            <i class="bi bi-cart-check"></i>
+            <span>New Sale</span>
+        </a>
+        <a href="{{ url_for('payments.payments_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('payments.') and request.endpoint != 'payments.collect_due' %}active{% endif %}">
+            <i class="bi bi-credit-card"></i>
+            <span>Payments</span>
+        </a>
+        <a href="{{ url_for('payments.collect_due') }}"
+           class="sidebar-link {% if request.endpoint == 'payments.collect_due' %}active{% endif %}">
+            <i class="bi bi-cash-coin"></i>
+            <span>Collect Due</span>
+        </a>
+        <a href="{{ url_for('ledger.ledger_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('ledger.') %}active{% endif %}">
+            <i class="bi bi-journal-text"></i>
+            <span>Customer Ledger</span>
+        </a>
+
+        <div class="sidebar-label">Insights</div>
+        <a href="{{ url_for('reports.reports_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}">
+            <i class="bi bi-bar-chart-line"></i>
+            <span>Reports</span>
+        </a>
+
+        <div class="sidebar-label">Account</div>
+        {% if current_user.has_role('admin') %}
+        <a href="{{ url_for('users.users_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('users.') %}active{% endif %}">
+            <i class="bi bi-person-gear"></i>
+            <span>User Management</span>
+        </a>
+        {% endif %}
+        <a href="{{ url_for('profile.index') }}"
+           class="sidebar-link {% if request.endpoint == 'profile.index' %}active{% endif %}">
+            <i class="bi bi-person-circle"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <form action="{{ url_for('auth.logout') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="sidebar-link sidebar-logout w-100 border-0 bg-transparent">
+                <i class="bi bi-box-arrow-left"></i>
+                <span>Logout</span>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>

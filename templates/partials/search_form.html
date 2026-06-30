@@ -1,0 +1,15 @@
+<form method="GET" class="row g-2 align-items-center mb-3">
+    <div class="col-md-6 col-lg-4">
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" name="q" class="form-control" placeholder="{{ placeholder or 'Search...' }}" value="{{ search_q or '' }}">
+        </div>
+    </div>
+    {% if extra_fields %}{{ extra_fields|safe }}{% endif %}
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary btn-sm">Search</button>
+        {% if search_q %}
+        <a href="{{ url_for(request.endpoint) }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+        {% endif %}
+    </div>
+</form>

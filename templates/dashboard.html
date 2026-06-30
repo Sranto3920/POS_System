@@ -1,0 +1,202 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Dashboard — POS System{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}
+<p class="topbar-subtitle mb-0">
+    Welcome back, {{ user.full_name }}
+    {% if current_shop %} · <span class="text-primary">{{ current_shop.shop_name }}</span>{% endif %}
+</p>
+{% endblock %}
+
+{% block content %}
+
+{# Row 1 — inventory & people counts #}
+<div class="row g-3 g-xl-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card-primary">
+            <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.total_products }}</div>
+                <div class="stat-label">Total Products</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card-info">
+            <div class="stat-icon"><i class="bi bi-folder2"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.total_categories }}</div>
+                <div class="stat-label">Total Categories</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card-success">
+            <div class="stat-icon"><i class="bi bi-people"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.total_customers }}</div>
+                <div class="stat-label">Total Customers</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card-warning">
+            <div class="stat-icon"><i class="bi bi-truck"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.total_suppliers }}</div>
+                <div class="stat-label">Total Suppliers</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Row 2 — sales & stock metrics #}
+<div class="row g-3 g-xl-4 mb-4">
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card stat-card-revenue">
+            <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
+            <div>
+                <div class="stat-value">{{ format_currency(stats.today_sales_amount) }}</div>
+                <div class="stat-label">Today's Sales ({{ stats.today_sales_count }} orders)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card stat-card-dark">
+            <div class="stat-icon"><i class="bi bi-calendar-month"></i></div>
+            <div>
+                <div class="stat-value">{{ format_currency(stats.monthly_revenue) }}</div>
+                <div class="stat-label">Monthly Revenue</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-4">
+        <div class="stat-card stat-card-danger">
+            <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+            <div>
+                <div class="stat-value">{{ stats.low_stock_count }}</div>
+                <div class="stat-label">Low Stock Products</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Quick Actions #}
+<div class="panel-card mb-4">
+    <div class="panel-header">
+        <h6 class="panel-title mb-0"><i class="bi bi-lightning-charge"></i> Quick Actions</h6>
+    </div>
+    <div class="panel-body">
+        <div class="row g-2 g-md-3">
+            <div class="col-6 col-md-3">
+                <a href="{{ url_for('products.add') }}" class="quick-action-btn w-100">
+                    <i class="bi bi-plus-circle"></i> Add Product
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="{{ url_for('sales.sales_new') }}" class="quick-action-btn w-100">
+                    <i class="bi bi-cart-check"></i> New Sale
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="{{ url_for('purchases.new') }}" class="quick-action-btn w-100">
+                    <i class="bi bi-bag-plus"></i> New Purchase
+                </a>
+            </div>
+            <div class="col-6 col-md-3">
+                <a href="{{ url_for('customers.add') }}" class="quick-action-btn w-100">
+                    <i class="bi bi-person-plus"></i> Add Customer
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Data tables #}
+<div class="row g-3 g-xl-4">
+    <div class="col-lg-7">
+        <div class="panel-card">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <h6 class="panel-title mb-0"><i class="bi bi-receipt-cutoff"></i> Recent Sales</h6>
+                <a href="{{ url_for('sales.sales_index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover dashboard-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Customer</th>
+                            <th>Cashier</th>
+                            <th>Date</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in recent_sales %}
+                        <tr>
+                            <td><span class="text-muted">#{{ sale.sale_id }}</span></td>
+                            <td>{{ sale.customer_name }}</td>
+                            <td>{{ sale.cashier_name or '—' }}</td>
+                            <td>{{ sale.sale_date.strftime('%b %d, %Y %I:%M %p') if sale.sale_date else '—' }}</td>
+                            <td class="text-end fw-semibold">{{ format_currency(sale.total_amount) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state py-4">
+                                    <i class="bi bi-receipt"></i>
+                                    <p class="mb-0">No sales recorded yet for your shop.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="panel-card">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <h6 class="panel-title mb-0"><i class="bi bi-exclamation-circle"></i> Low Stock Products</h6>
+                <a href="{{ url_for('products.products_index', stock='low') }}" class="btn btn-sm btn-outline-danger">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover dashboard-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th class="text-end">Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in low_stock_products %}
+                        <tr>
+                            <td>{{ product.product_name }}</td>
+                            <td>{{ product.category_name or '—' }}</td>
+                            <td class="text-end">
+                                <span class="badge bg-danger-subtle text-danger">{{ product.stock_quantity }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3">
+                                <div class="empty-state py-4">
+                                    <i class="bi bi-check-circle"></i>
+                                    <p class="mb-0">All products are above the low-stock threshold.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

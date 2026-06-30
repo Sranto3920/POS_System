@@ -1,0 +1,117 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ profile.customer.name }} — POS System{% endblock %}
+{% block page_title %}{{ profile.customer.name }}{% endblock %}
+{% block page_subtitle %}
+<p class="topbar-subtitle mb-0">Customer profile and due history</p>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Total Purchases</h6></div>
+            <div class="panel-body">
+                <div class="fs-5 fw-bold">{{ format_currency(profile.total_purchases) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Total Paid</h6></div>
+            <div class="panel-body">
+                <div class="fs-5 fw-bold text-success">{{ format_currency(profile.total_paid) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Total Due</h6></div>
+            <div class="panel-body">
+                <div class="fs-5 fw-bold text-danger">{{ format_currency(profile.total_due) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Due Invoices</h6></div>
+            <div class="panel-body">
+                <div class="fs-5 fw-bold">{{ profile.due_invoice_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="panel-card h-100">
+            <div class="panel-header"><h6 class="panel-title mb-0">Contact</h6></div>
+            <div class="panel-body">
+                <div class="mb-2"><strong>Phone:</strong> {{ profile.customer.phone or '—' }}</div>
+                <div class="mb-2"><strong>Email:</strong> {{ profile.customer.email or '—' }}</div>
+                <div class="mb-2"><strong>Address:</strong> {{ profile.customer.address or '—' }}</div>
+                <div class="mb-0"><strong>Ledger Balance:</strong> {{ format_currency(profile.ledger_balance) }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="panel-card">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <h6 class="panel-title mb-0"><i class="bi bi-receipt"></i> Sales History</h6>
+                {% if profile.total_due > 0 %}
+                <a href="{{ url_for('payments.collect_due') }}?q={{ profile.customer.name | urlencode }}" class="btn btn-sm btn-primary">Collect Due</a>
+                {% endif %}
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover dashboard-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Date</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-end">Paid</th>
+                            <th class="text-end">Due</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in profile.sales %}
+                        {% set paid = profile.sale_service.get_sale_paid_total(sale) %}
+                        {% set due = profile.sale_service.get_sale_balance_due(sale) %}
+                        <tr>
+                            <td><a href="{{ url_for('sales.view', sale_id=sale.id) }}">#{{ sale.id }}</a></td>
+                            <td>{{ sale.sale_date.strftime('%b %d, %Y') if sale.sale_date else '—' }}</td>
+                            <td class="text-end">{{ format_currency(sale.total_amount) }}</td>
+                            <td class="text-end">{{ format_currency(paid) }}</td>
+                            <td class="text-end">{{ format_currency(due) }}</td>
+                            <td>
+                                {% if sale.payment_status == 'Paid' %}
+                                <span class="badge bg-success">Paid</span>
+                                {% elif sale.payment_status == 'Partially Paid' %}
+                                <span class="badge bg-warning text-dark">Partially Paid</span>
+                                {% else %}
+                                <span class="badge bg-danger">Due</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">No sales recorded yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3 d-flex gap-2">
+    <a href="{{ url_for('customers.customers_index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Back to Customers
+    </a>
+    <a href="{{ url_for('customers.edit', customer_id=profile.customer.id) }}" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-pencil"></i> Edit Customer
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "layouts/platform.html" %}
+
+{% block title %}Create Shop — Platform{% endblock %}
+{% block page_title %}Create Shop{% endblock %}
+{% block page_subtitle %}
+<p class="platform-subtitle mb-0">Provision a new shop and its first Admin user</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="platform-panel">
+            <div class="platform-panel-header">
+                <h6 class="mb-0"><i class="bi bi-plus-circle"></i> New Shop Details</h6>
+            </div>
+            <div class="platform-panel-body">
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="form-section-title">Shop Information</h6>
+
+                            <div class="mb-3">
+                                {{ form.shop_name.label(class="form-label") }}
+                                {{ form.shop_name(class="form-control" + (" is-invalid" if form.shop_name.errors else ""), placeholder="e.g. M/S Bhai Bhai Enterprise") }}
+                                {% for error in form.shop_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.owner_name.label(class="form-label") }}
+                                {{ form.owner_name(class="form-control" + (" is-invalid" if form.owner_name.errors else "")) }}
+                                {% for error in form.owner_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.phone.label(class="form-label") }}
+                                {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="e.g. 01711223344") }}
+                                {% for error in form.phone.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="shop@business.com") }}
+                                {% for error in form.email.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.address.label(class="form-label") }}
+                                {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows=3) }}
+                                {% for error in form.address.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="form-section-title">First Admin User</h6>
+                            <p class="text-muted small">This account will be the shop's primary administrator.</p>
+
+                            <div class="mb-3">
+                                {{ form.admin_name.label(class="form-label") }}
+                                {{ form.admin_name(class="form-control" + (" is-invalid" if form.admin_name.errors else "")) }}
+                                {% for error in form.admin_name.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.admin_email.label(class="form-label") }}
+                                {{ form.admin_email(class="form-control" + (" is-invalid" if form.admin_email.errors else ""), placeholder="admin@business.com") }}
+                                {% for error in form.admin_email.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.admin_password.label(class="form-label") }}
+                                {{ form.admin_password(class="form-control" + (" is-invalid" if form.admin_password.errors else "")) }}
+                                <div class="form-text">Minimum 8 characters. Share this securely with the shop owner.</div>
+                                {% for error in form.admin_password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="alert alert-info small mb-0">
+                                <i class="bi bi-info-circle"></i>
+                                The shop will be created as <strong>Active</strong> immediately.
+                                The admin can log in at the shop staff login page.
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('platform.dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Create Shop
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

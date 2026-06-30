@@ -1,0 +1,105 @@
+{% extends "layouts/platform.html" %}
+
+{% block title %}{{ shop.shop_name }} — Platform{% endblock %}
+{% block page_title %}{{ shop.shop_name }}{% endblock %}
+{% block page_subtitle %}
+<p class="platform-subtitle mb-0">Shop details and admin account</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="platform-panel">
+            <div class="platform-panel-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-shop"></i> Shop Information</h6>
+                <span class="badge bg-{{ shop.status_badge_class }}">{{ shop.status_label }}</span>
+            </div>
+            <div class="platform-panel-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Shop Name</dt>
+                    <dd class="col-sm-8">{{ shop.shop_name }}</dd>
+
+                    <dt class="col-sm-4">Owner Name</dt>
+                    <dd class="col-sm-8">{{ shop.owner_name }}</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ shop.email }}</dd>
+
+                    <dt class="col-sm-4">Phone</dt>
+                    <dd class="col-sm-8">{{ shop.phone or '—' }}</dd>
+
+                    <dt class="col-sm-4">Address</dt>
+                    <dd class="col-sm-8">{{ shop.address or '—' }}</dd>
+
+                    <dt class="col-sm-4">Created</dt>
+                    <dd class="col-sm-8">
+                        {% if shop.created_at %}
+                            {{ shop.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Shop ID</dt>
+                    <dd class="col-sm-8"><code>#{{ shop.id }}</code></dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="platform-panel">
+            <div class="platform-panel-header">
+                <h6 class="mb-0"><i class="bi bi-person-gear"></i> Shop Admin</h6>
+            </div>
+            <div class="platform-panel-body">
+                {% if admin %}
+                <dl class="row mb-0">
+                    <dt class="col-sm-5">Name</dt>
+                    <dd class="col-sm-7">{{ admin.full_name }}</dd>
+
+                    <dt class="col-sm-5">Email</dt>
+                    <dd class="col-sm-7">{{ admin.email }}</dd>
+
+                    <dt class="col-sm-5">Role</dt>
+                    <dd class="col-sm-7"><span class="badge bg-primary">{{ admin.role_label }}</span></dd>
+
+                    <dt class="col-sm-5">Status</dt>
+                    <dd class="col-sm-7">
+                        {% if admin.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+                {% else %}
+                <p class="text-muted mb-0">No admin user found for this shop.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="platform-panel mt-4">
+            <div class="platform-panel-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('platform.edit_shop', shop_id=shop.id) }}" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Edit Shop
+                    </a>
+                    <form action="{{ url_for('platform.toggle_shop_status', shop_id=shop.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-{{ 'warning' if shop.is_active else 'success' }} w-100">
+                            <i class="bi bi-{{ 'pause' if shop.is_active else 'play' }}"></i>
+                            {{ 'Deactivate Shop' if shop.is_active else 'Activate Shop' }}
+                        </button>
+                    </form>
+                    <a href="{{ url_for('platform.dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

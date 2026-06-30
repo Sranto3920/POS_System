@@ -1,0 +1,107 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Profile — POS System{% endblock %}
+{% block page_title %}Profile{% endblock %}
+{% block page_subtitle %}
+<p class="topbar-subtitle mb-0">Your account and shop information</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="panel-card h-100">
+            <div class="panel-header">
+                <h6 class="panel-title mb-0"><i class="bi bi-person-circle"></i> My Account</h6>
+            </div>
+            <div class="panel-body">
+                <div class="text-center mb-4">
+                    <div class="profile-avatar">{{ user.full_name[:1] }}</div>
+                    <h5 class="mb-1">{{ user.full_name }}</h5>
+                    <span class="badge bg-primary">{{ user.role_label }}</span>
+                </div>
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ user.email }}</dd>
+
+                    <dt class="col-sm-4">Phone</dt>
+                    <dd class="col-sm-8">{{ user.phone or '—' }}</dd>
+
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        {% if user.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Last Login</dt>
+                    <dd class="col-sm-8">
+                        {% if user.last_login %}
+                            {{ user.last_login.strftime('%b %d, %Y %I:%M %p') }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Member Since</dt>
+                    <dd class="col-sm-8">
+                        {% if user.created_at %}
+                            {{ user.created_at.strftime('%b %d, %Y') }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="panel-card h-100">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <h6 class="panel-title mb-0"><i class="bi bi-shop"></i> My Shop</h6>
+                {% if shop %}
+                <span class="badge bg-{{ shop.status_badge_class }}">{{ shop.status_label }}</span>
+                {% endif %}
+            </div>
+            <div class="panel-body">
+                {% if shop %}
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Shop Name</dt>
+                    <dd class="col-sm-8 fw-semibold">{{ shop.shop_name }}</dd>
+
+                    <dt class="col-sm-4">Owner</dt>
+                    <dd class="col-sm-8">{{ shop.owner_name }}</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ shop.email }}</dd>
+
+                    <dt class="col-sm-4">Phone</dt>
+                    <dd class="col-sm-8">{{ shop.phone or '—' }}</dd>
+
+                    <dt class="col-sm-4">Address</dt>
+                    <dd class="col-sm-8">{{ shop.address or '—' }}</dd>
+
+                    <dt class="col-sm-4">Shop ID</dt>
+                    <dd class="col-sm-8"><code>#{{ shop.id }}</code></dd>
+
+                    <dt class="col-sm-4">Registered</dt>
+                    <dd class="col-sm-8">
+                        {% if shop.created_at %}
+                            {{ shop.created_at.strftime('%B %d, %Y') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+                </dl>
+                {% else %}
+                <p class="text-muted mb-0">Shop information is unavailable.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

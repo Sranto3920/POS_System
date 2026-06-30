@@ -1,0 +1,11 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}Not Found — POS System{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="display-6">404 — Page Not Found</h1>
+    <p class="text-muted">The page you requested does not exist.</p>
+    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+</div>
+{% endblock %}

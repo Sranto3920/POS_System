@@ -1,0 +1,104 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Customer Ledger — POS System{% endblock %}
+{% block page_title %}Customer Ledger{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0">Account balances, debits, and credits</p>{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    {% for item in customer_summaries %}
+    {% if item.balance > 0 %}
+    <div class="col-md-4 col-lg-3">
+        <div class="panel-card h-100">
+            <div class="panel-body">
+                <div class="text-muted small">Outstanding</div>
+                <div class="fw-semibold">{{ item.customer.name }}</div>
+                <div class="fs-5 fw-bold text-danger mt-1">{{ format_currency(item.balance) }}</div>
+                <a href="{{ url_for('ledger.customer', customer_id=item.customer.id) }}" class="btn btn-outline-primary btn-sm mt-2">View Ledger</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<div class="panel-card mb-4">
+    <div class="panel-header">
+        <h6 class="panel-title mb-0"><i class="bi bi-funnel"></i> Filter Entries</h6>
+    </div>
+    <div class="panel-body">
+        <form method="GET" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="customer_id" class="form-label">Customer</label>
+                <select name="customer_id" id="customer_id" class="form-select">
+                    <option value="">All customers</option>
+                    {% for customer in customers %}
+                    <option value="{{ customer.id }}" {% if selected_customer_id == customer.id %}selected{% endif %}>{{ customer.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="q" class="form-label">Search</label>
+                <input type="text" name="q" id="q" class="form-control" value="{{ search_q or '' }}" placeholder="Customer name...">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-primary btn-sm">Apply</button>
+                {% if selected_customer_id or search_q %}
+                <a href="{{ url_for('ledger.ledger_index') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="panel-card">
+    <div class="panel-header d-flex justify-content-between align-items-center">
+        <h6 class="panel-title mb-0"><i class="bi bi-journal-text"></i> Ledger Entries</h6>
+        <span class="badge bg-secondary">{{ pagination.total }} total</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover dashboard-table mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Sale</th>
+                    <th class="text-end">Debit</th>
+                    <th class="text-end">Credit</th>
+                    <th class="text-end">Balance</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.transaction_date.strftime('%b %d, %Y') if entry.transaction_date else '—' }}</td>
+                    <td>
+                        <a href="{{ url_for('ledger.customer', customer_id=entry.customer_id) }}">{{ entry.customer.name if entry.customer else '—' }}</a>
+                    </td>
+                    <td>
+                        {% if entry.sale_id %}
+                        <a href="{{ url_for('sales.view', sale_id=entry.sale_id) }}">#{{ entry.sale_id }}</a>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    <td class="text-end">{{ format_currency(entry.debit) if entry.debit else '—' }}</td>
+                    <td class="text-end">{{ format_currency(entry.credit) if entry.credit else '—' }}</td>
+                    <td class="text-end fw-semibold">{{ format_currency(entry.balance) }}</td>
+                    <td class="text-muted small">{{ entry.remarks or '—' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">No ledger entries found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="panel-body pt-0">
+        {% set extra_args = extra_args|default({}) %}
+        {% include "partials/pagination.html" %}
+    </div>
+</div>
+{% endblock %}

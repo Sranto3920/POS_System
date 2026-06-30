@@ -1,0 +1,71 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Suppliers — POS System{% endblock %}
+{% block page_title %}Suppliers{% endblock %}
+{% block page_subtitle %}
+<p class="topbar-subtitle mb-0">Track supplier contacts and purchase relationships</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="panel-card">
+    <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h6 class="panel-title mb-0"><i class="bi bi-truck"></i> Suppliers</h6>
+        <a href="{{ url_for('suppliers.add') }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-lg"></i> Add Supplier
+        </a>
+    </div>
+    <div class="panel-body">
+        {% set placeholder = "Search suppliers..." %}
+        {% include "partials/search_form.html" %}
+
+        <div class="table-responsive">
+            <table class="table table-hover dashboard-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th class="text-end" style="width: 140px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for supplier in suppliers %}
+                    <tr>
+                        <td class="fw-semibold">{{ supplier.name }}</td>
+                        <td>{{ supplier.phone or '—' }}</td>
+                        <td>{{ supplier.email or '—' }}</td>
+                        <td>{{ supplier.address or '—' }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('suppliers.edit', supplier_id=supplier.id) }}"
+                               class="btn btn-sm btn-outline-primary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{{ url_for('suppliers.delete', supplier_id=supplier.id) }}"
+                                  method="POST" class="d-inline"
+                                  onsubmit="return confirm('Delete this supplier?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            {% if search_q %}No suppliers match your search.{% else %}No suppliers yet. Add your first supplier.{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% set extra_args = {} %}
+        {% include "partials/pagination.html" %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}{{ title }} — POS System{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block page_subtitle %}
+<p class="topbar-subtitle mb-0">
+    <a href="{{ url_for('reports.reports_index') }}" class="text-decoration-none">
+        <i class="bi bi-arrow-left"></i> Back to Reports
+    </a>
+</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="panel-card mb-4">
+    <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h6 class="panel-title mb-0"><i class="bi bi-{{ icon }}"></i> {{ title }}</h6>
+        {% if export_type %}
+        <a href="{{ url_for('exports.exports_download', export_type=export_type) }}"
+           class="btn btn-sm btn-outline-success">
+            <i class="bi bi-file-earmark-excel"></i> Export Excel
+        </a>
+        {% endif %}
+    </div>
+    <div class="panel-body">
+        {% if filter_type == 'date' %}
+        <form method="GET" class="row g-2 align-items-end mb-3">
+            <div class="col-auto">
+                <label class="form-label mb-0" for="date">Date</label>
+                <input type="date" class="form-control" id="date" name="date"
+                       value="{{ filter_value }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </form>
+        {% elif filter_type == 'month' %}
+        <form method="GET" class="row g-2 align-items-end mb-3">
+            <div class="col-auto">
+                <label class="form-label mb-0" for="year">Year</label>
+                <input type="number" class="form-control" id="year" name="year"
+                       value="{{ filter_year }}" min="2000" max="2100">
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0" for="month">Month</label>
+                <input type="number" class="form-control" id="month" name="month"
+                       value="{{ filter_month }}" min="1" max="12">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </form>
+        {% elif filter_type == 'range' %}
+        <form method="GET" class="row g-2 align-items-end mb-3">
+            <div class="col-auto">
+                <label class="form-label mb-0" for="date_from">From</label>
+                <input type="date" class="form-control" id="date_from" name="date_from"
+                       value="{{ filter_date_from }}">
+            </div>
+            <div class="col-auto">
+                <label class="form-label mb-0" for="date_to">To</label>
+                <input type="date" class="form-control" id="date_to" name="date_to"
+                       value="{{ filter_date_to }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </form>
+        {% endif %}
+
+        {% if summary %}
+        <div class="row g-3 mb-3">
+            {% for label, value in summary %}
+            <div class="col-sm-6 col-md-4 col-xl-3">
+                <div class="border rounded p-3 h-100">
+                    <div class="text-muted small">{{ label }}</div>
+                    <div class="fw-semibold">
+                        {% if label in ['Total Amount', 'Total Spent', 'Total Purchased', 'Total Value'] %}
+                            {{ format_currency(value) }}
+                        {% else %}
+                            {{ value }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if daily_breakdown %}
+<div class="panel-card mb-4">
+    <div class="panel-header">
+        <h6 class="panel-title mb-0"><i class="bi bi-bar-chart"></i> Daily Breakdown</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover dashboard-table mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Sales Count</th>
+                    <th class="text-end">Day Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in daily_breakdown %}
+                <tr>
+                    <td>{{ day.sale_day.strftime('%b %d, %Y') if day.sale_day else '—' }}</td>
+                    <td>{{ day.sale_count }}</td>
+                    <td class="text-end">{{ format_currency(day.day_total) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" class="text-center text-muted py-4">No daily data for this period.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="panel-card">
+    <div class="panel-header">
+        <h6 class="panel-title mb-0"><i class="bi bi-table"></i> Details</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover dashboard-table mb-0">
+            <thead>
+                <tr>
+                    {% for key, label in columns %}
+                    <th class="{{ 'text-end' if key in ['total_amount', 'total_spent', 'total_purchased', 'cost_price', 'default_selling_price', 'stock_value', 'stock_quantity'] else '' }}">
+                        {{ label }}
+                    </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data.rows %}
+                <tr>
+                    {% for key, label in columns %}
+                    <td class="{{ 'text-end' if key in ['total_amount', 'total_spent', 'total_purchased', 'cost_price', 'default_selling_price', 'stock_value'] else '' }}">
+                        {% set value = row[key] %}
+                        {% if key in ['total_amount', 'total_spent', 'total_purchased', 'cost_price', 'default_selling_price', 'stock_value'] %}
+                            {{ format_currency(value) }}
+                        {% elif key in ['sale_date', 'purchase_date'] and value %}
+                            {{ value.strftime('%b %d, %Y %I:%M %p') }}
+                        {% elif key == 'expiry_date' and value %}
+                            {{ value.strftime('%b %d, %Y') }}
+                        {% else %}
+                            {{ value if value is not none else '—' }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="{{ columns|length }}" class="text-center text-muted py-4">
+                        No records found for this report.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

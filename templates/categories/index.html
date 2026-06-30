@@ -1,0 +1,67 @@
+{% extends "layouts/app.html" %}
+
+{% block title %}Categories — POS System{% endblock %}
+{% block page_title %}Categories{% endblock %}
+{% block page_subtitle %}
+<p class="topbar-subtitle mb-0">Organize products into categories for your shop</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="panel-card">
+    <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h6 class="panel-title mb-0"><i class="bi bi-folder2"></i> Categories</h6>
+        <a href="{{ url_for('categories.add') }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-plus-lg"></i> Add Category
+        </a>
+    </div>
+    <div class="panel-body">
+        {% set placeholder = "Search categories..." %}
+        {% include "partials/search_form.html" %}
+
+        <div class="table-responsive">
+            <table class="table table-hover dashboard-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th class="text-end" style="width: 140px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td class="fw-semibold">{{ category.name }}</td>
+                        <td>{{ category.description or '—' }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('categories.edit', category_id=category.id) }}"
+                               class="btn btn-sm btn-outline-primary" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form action="{{ url_for('categories.delete', category_id=category.id) }}"
+                                  method="POST" class="d-inline"
+                                  onsubmit="return confirm('Delete this category?');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center text-muted py-4">
+                            {% if search_q %}No categories match your search.{% else %}No categories yet. Add your first category.{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% set extra_args = {} %}
+        {% include "partials/pagination.html" %}
+    </div>
+</div>
+
+{% endblock %}
