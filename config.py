@@ -12,15 +12,24 @@ def _build_database_uri():
     if database_url:
         if database_url.startswith("mysql://"):
             database_url = database_url.replace("mysql://", "mysql+pymysql://", 1)
+        if database_url.startswith("postgresql://") or database_url.startswith(
+            "postgres://"
+        ):
+            raise RuntimeError(
+                "DATABASE_URL points to PostgreSQL, but this app requires MySQL. "
+                "On Render, the blueprint 'databases' block creates Postgres — use a "
+                "hosted MySQL URL instead (PlanetScale, Railway, etc.)."
+            )
         return database_url
 
     db_user = os.getenv("DB_USER", "root")
     db_password = os.getenv("DB_PASSWORD", "")
     db_host = os.getenv("DB_HOST", "localhost")
+    db_port = os.getenv("DB_PORT", "3306")
     db_name = os.getenv("DB_NAME", "pos_inventory_db")
     return (
         f"mysql+pymysql://{quote_plus(db_user)}:{quote_plus(db_password)}@"
-        f"{db_host}/{db_name}"
+        f"{db_host}:{db_port}/{db_name}"
     )
 
 

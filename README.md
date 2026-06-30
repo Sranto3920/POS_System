@@ -149,20 +149,14 @@ python tests/test_workflow.py
 
 ## Deployment (Render)
 
-1. Push this repo to GitHub (do **not** commit `.env`).
-2. Create a [Render](https://render.com) account → **New Blueprint** → connect repo (`render.yaml` included).
-3. Or manually:
-   - **Web Service:** Python, build `pip install -r requirements.txt`, start `gunicorn wsgi:application --bind 0.0.0.0:$PORT`
-   - **MySQL:** Render MySQL or external provider (PlanetScale, Railway)
-4. Set environment variables in Render dashboard:
+**Full step-by-step guide:** [DEPLOY_RENDER.md](DEPLOY_RENDER.md)
 
-| Variable | Value |
-|----------|-------|
-| `SECRET_KEY` | Long random string |
-| `FLASK_ENV` | `production` |
-| `DATABASE_URL` | `mysql+pymysql://user:pass@host:3306/dbname` |
+> Render blueprint `databases:` creates **PostgreSQL**, not MySQL. This app needs **MySQL** — use PlanetScale or Railway and paste `DATABASE_URL` in Render.
 
-5. Open Render shell and run once: `flask init-db --seed-platform`
+1. Create free MySQL on [PlanetScale](https://planetscale.com).
+2. Render → **New Web Service** → connect `Sranto3920/POS_System`.
+3. Environment: `DATABASE_URL`, `SECRET_KEY`, `FLASK_ENV=production`, `PLATFORM_OWNER_PASSWORD`.
+4. After deploy → **Shell** → `flask init-db && flask init-db --seed-platform`.
 
 ## Screenshots
 
