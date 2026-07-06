@@ -3,10 +3,15 @@ from flask_login import current_user
 
 from forms.customer_forms import CustomerForm
 from services.customer_service import CustomerService
-from utils.decorators import shop_user_required
+from utils.decorators import manager_or_owner_required, shop_user_required
 from utils.pagination import get_page, get_search
+from utils.roles import Role
 
 customers_bp = Blueprint("customers", __name__, url_prefix="/customers")
+
+
+def _can_manage_customers():
+    return current_user.has_role(Role.ADMIN, Role.MANAGER)
 
 
 @customers_bp.route("/")
@@ -22,6 +27,7 @@ def customers_index():
         pagination=pagination,
         customers=pagination.items,
         search_q=search,
+        can_manage_customers=_can_manage_customers(),
     )
 
 
@@ -38,6 +44,7 @@ def view(customer_id):
 
 @customers_bp.route("/add", methods=["GET", "POST"])
 @shop_user_required
+@manager_or_owner_required
 def add():
     form = CustomerForm()
 
@@ -57,6 +64,7 @@ def add():
 
 @customers_bp.route("/edit/<int:customer_id>", methods=["GET", "POST"])
 @shop_user_required
+@manager_or_owner_required
 def edit(customer_id):
     customer = CustomerService.get(current_user.shop_id, customer_id)
     if customer is None:
@@ -82,6 +90,7 @@ def edit(customer_id):
 
 @customers_bp.route("/delete/<int:customer_id>", methods=["POST"])
 @shop_user_required
+@manager_or_owner_required
 def delete(customer_id):
     customer = CustomerService.get(current_user.shop_id, customer_id)
     if customer is None:

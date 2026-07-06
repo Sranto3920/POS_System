@@ -1,23 +1,24 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Purchases — POS System{% endblock %}
-{% block page_title %}Purchases{% endblock %}
-{% block page_subtitle %}<p class="topbar-subtitle mb-0">Stock purchases from suppliers</p>{% endblock %}
+{% block title %}{{ t('purchases.title') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('purchases.title') }}{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0" data-i18n="purchases.subtitle">{{ t('purchases.subtitle') }}</p>{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div></div>
     <a href="{{ url_for('purchases.new') }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-lg"></i> New Purchase
+        <i class="bi bi-plus-lg"></i> <span data-i18n="purchases.new">{{ t('purchases.new') }}</span>
     </a>
 </div>
 
 <div class="panel-card">
     <div class="panel-header d-flex justify-content-between align-items-center">
-        <h6 class="panel-title mb-0"><i class="bi bi-cart-plus"></i> Purchase History</h6>
-        <span class="badge bg-secondary">{{ pagination.total }} total</span>
+        <h6 class="panel-title mb-0"><i class="bi bi-cart-plus"></i> <span data-i18n="purchases.history">{{ t('purchases.history') }}</span></h6>
+        <span class="badge bg-secondary" data-i18n="common.total_count">{{ t('common.total_count', count=pagination.total) }}</span>
     </div>
     <div class="panel-body">
+        {% set placeholder = t('purchases.search_placeholder') %}
         {% include "partials/search_form.html" %}
 
         <div class="table-responsive">
@@ -25,10 +26,10 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Date</th>
-                        <th>Supplier</th>
-                        <th>Recorded By</th>
-                        <th class="text-end">Total</th>
+                        <th data-i18n="common.date">{{ t('common.date') }}</th>
+                        <th data-i18n="common.supplier">{{ t('common.supplier') }}</th>
+                        <th data-i18n="purchases.recorded_by">{{ t('purchases.recorded_by') }}</th>
+                        <th class="text-end" data-i18n="common.total">{{ t('common.total') }}</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -36,17 +37,19 @@
                     {% for purchase in purchases %}
                     <tr>
                         <td>{{ purchase.id }}</td>
-                        <td>{{ purchase.purchase_date.strftime('%b %d, %Y %I:%M %p') if purchase.purchase_date else '—' }}</td>
+                        <td>{{ format_date_locale(purchase.purchase_date, include_time=True) if purchase.purchase_date else '—' }}</td>
                         <td>{{ purchase.supplier.name if purchase.supplier else '—' }}</td>
                         <td>{{ purchase.user.full_name if purchase.user else '—' }}</td>
                         <td class="text-end">{{ format_currency(purchase.total_amount) }}</td>
                         <td class="text-end">
-                            <a href="{{ url_for('purchases.view', purchase_id=purchase.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+                            <a href="{{ url_for('purchases.view', purchase_id=purchase.id) }}" class="btn btn-outline-primary btn-sm">
+                                <span data-i18n="common.view">{{ t('common.view') }}</span>
+                            </a>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">No purchases found.</td>
+                        <td colspan="6" class="text-center text-muted py-4" data-i18n="purchases.no_purchases">{{ t('purchases.no_purchases') }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

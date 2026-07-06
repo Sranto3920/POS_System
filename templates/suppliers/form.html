@@ -1,10 +1,14 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}{{ title }} — POS System{% endblock %}
-{% block page_title %}{{ title }}{% endblock %}
+{% block title %}{% if supplier %}{{ t('suppliers.edit') }}{% else %}{{ t('suppliers.new') }}{% endif %} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{% if supplier %}{{ t('suppliers.edit') }}{% else %}{{ t('suppliers.new') }}{% endif %}{% endblock %}
 {% block page_subtitle %}
 <p class="topbar-subtitle mb-0">
-    {% if supplier %}Editing {{ supplier.name }}{% else %}Add a new supplier contact{% endif %}
+    {% if supplier %}
+    <span data-i18n="suppliers.editing">{{ t('suppliers.editing', name=supplier.name) }}</span>
+    {% else %}
+    <span data-i18n="suppliers.register_subtitle">{{ t('suppliers.register_subtitle') }}</span>
+    {% endif %}
 </p>
 {% endblock %}
 
@@ -14,15 +18,21 @@
     <div class="col-lg-8">
         <div class="panel-card">
             <div class="panel-header">
-                <h6 class="panel-title mb-0"><i class="bi bi-truck"></i> {{ title }}</h6>
+                <h6 class="panel-title mb-0"><i class="bi bi-truck"></i>
+                    {% if supplier %}
+                    <span data-i18n="suppliers.edit">{{ t('suppliers.edit') }}</span>
+                    {% else %}
+                    <span data-i18n="suppliers.new">{{ t('suppliers.new') }}</span>
+                    {% endif %}
+                </h6>
             </div>
             <div class="panel-body">
                 <form method="POST" novalidate>
                     {{ form.hidden_tag() }}
 
                     <div class="mb-3">
-                        {{ form.name.label(class="form-label") }}
-                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Supplier company or contact name") }}
+                        <label class="form-label" for="{{ form.name.id }}" data-i18n="common.name">{{ t('common.name') }}</label>
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder=t('suppliers.name_placeholder'), **{'data-i18n-placeholder': 'suppliers.name_placeholder'}) }}
                         {% for error in form.name.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                         {% endfor %}
@@ -31,7 +41,7 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                {{ form.phone.label(class="form-label") }}
+                                <label class="form-label" for="{{ form.phone.id }}" data-i18n="common.phone">{{ t('common.phone') }}</label>
                                 {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="e.g. 01711223344") }}
                                 {% for error in form.phone.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
@@ -40,7 +50,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                {{ form.email.label(class="form-label") }}
+                                <label class="form-label" for="{{ form.email.id }}" data-i18n="common.email">{{ t('common.email') }}</label>
                                 {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="supplier@example.com") }}
                                 {% for error in form.email.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
@@ -50,7 +60,7 @@
                     </div>
 
                     <div class="mb-3">
-                        {{ form.address.label(class="form-label") }}
+                        <label class="form-label" for="{{ form.address.id }}" data-i18n="common.address">{{ t('common.address') }}</label>
                         {{ form.address(class="form-control" + (" is-invalid" if form.address.errors else ""), rows=3) }}
                         {% for error in form.address.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
@@ -59,10 +69,15 @@
 
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('suppliers.suppliers_index') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Cancel
+                            <i class="bi bi-arrow-left"></i> <span data-i18n="common.cancel">{{ t('common.cancel') }}</span>
                         </a>
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg"></i> {{ submit_label }}
+                            <i class="bi bi-check-lg"></i>
+                            {% if supplier %}
+                            <span data-i18n="suppliers.save_changes">{{ t('suppliers.save_changes') }}</span>
+                            {% else %}
+                            <span data-i18n="suppliers.create">{{ t('suppliers.create') }}</span>
+                            {% endif %}
                         </button>
                     </div>
                 </form>

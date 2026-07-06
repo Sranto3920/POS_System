@@ -58,11 +58,13 @@ class WorkflowTestCase(unittest.TestCase):
     def test_01_login_page_loads(self):
         response = self.client.get("/login")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Login", response.data)
+        self.assertIn(b"auth-card", response.data)
 
     def test_02_platform_login_page_loads(self):
-        response = self.client.get("/platform/login")
+        response = self.client.get("/owner/login")
         self.assertEqual(response.status_code, 200)
+        response = self.client.get("/platform/login")
+        self.assertEqual(response.status_code, 302)
 
     def test_03_dashboard_requires_auth(self):
         response = self.client.get("/", follow_redirects=False)

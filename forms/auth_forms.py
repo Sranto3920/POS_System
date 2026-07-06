@@ -23,3 +23,23 @@ class LoginForm(FlaskForm):
         ],
     )
     remember_me = BooleanField("Remember Me")
+
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField(
+        "Current Password",
+        validators=[DataRequired(), Length(min=6, max=128)],
+    )
+    new_password = PasswordField(
+        "New Password",
+        validators=[DataRequired(), Length(min=8, max=128)],
+    )
+    confirm_password = PasswordField(
+        "Confirm Password",
+        validators=[DataRequired(), Length(min=8, max=128)],
+    )
+
+    def validate_confirm_password(self, field):
+        if field.data != self.new_password.data:
+            from wtforms.validators import ValidationError
+            raise ValidationError("Passwords must match.")

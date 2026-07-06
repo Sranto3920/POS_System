@@ -1,17 +1,11 @@
-# Render Blueprint — Web service only
-#
-# IMPORTANT: The `databases:` block in Render creates POSTGRESQL, not MySQL.
-# This POS app requires MySQL. Set DATABASE_URL manually in the Render dashboard
-# (from PlanetScale, Railway, Aiven, or a MySQL private service).
-#
-# See DEPLOY_RENDER.md for full step-by-step instructions.
+# Render Blueprint — see DEPLOY_RENDER.md (one free guide: Render + TiDB Cloud)
 
 services:
   - type: web
     name: pos-system
     runtime: python
     plan: free
-    buildCommand: ./scripts/render_build.sh
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
     healthCheckPath: /login
     envVars:
@@ -25,7 +19,6 @@ services:
         value: "0"
       - key: SECRET_KEY
         generateValue: true
-      # Paste your hosted MySQL URL in the Render dashboard after deploy:
-      # mysql+pymysql://USER:PASSWORD@HOST:3306/pos_inventory_db
+      # Set in Render dashboard — get from TiDB Cloud (see DEPLOY_RENDER.md)
       - key: DATABASE_URL
         sync: false

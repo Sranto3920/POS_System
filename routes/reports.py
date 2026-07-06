@@ -5,9 +5,25 @@ from flask import Blueprint, render_template, request
 from flask_login import current_user
 
 from services.report_service import ReportService
-from utils.decorators import shop_user_required
+from utils.decorators import manager_or_owner_required, shop_user_required
+from utils.roles import Role
 
 reports_bp = Blueprint("reports", __name__, url_prefix="/reports")
+
+
+@reports_bp.before_request
+def _reports_role_guard():
+    from flask import abort, redirect, url_for
+    from flask_login import current_user
+
+    from models.platform_user import PlatformUser
+
+    if not current_user.is_authenticated:
+        return redirect(url_for("auth.login", next=request.url))
+    if isinstance(current_user, PlatformUser):
+        abort(403)
+    if not Role.matches(current_user.role, Role.ADMIN, Role.MANAGER):
+        abort(403)
 
 REPORT_LINKS = [
     {

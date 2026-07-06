@@ -17,9 +17,11 @@ class User(UserMixin, db.Model):
     full_name = db.Column("name", db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False, index=True)
     password_hash = db.Column("password", db.String(255), nullable=False)
+    login_password = db.Column(db.String(255), nullable=True)
     role = db.Column(db.String(20), nullable=False, default=Role.CASHIER)
     phone = db.Column(db.String(20))
     is_active = db.Column(db.Boolean, default=True, nullable=False)
+    preferred_language = db.Column(db.String(5), nullable=False, default="bn")
     created_at = db.Column(db.DateTime)
     last_login = db.Column(db.DateTime)
 
@@ -31,6 +33,12 @@ class User(UserMixin, db.Model):
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
+        self.login_password = password
+
+    @property
+    def shop_login_password(self):
+        """Recoverable login password (shop owner / platform owner support)."""
+        return self.login_password
 
     def check_password(self, password):
         stored = self.password_hash or ""

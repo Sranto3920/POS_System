@@ -1,12 +1,28 @@
-from flask import Blueprint, flash, redirect, render_template, url_for
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from forms.supplier_forms import SupplierForm
 from services.supplier_service import SupplierService
-from utils.decorators import shop_user_required
+from utils.decorators import manager_or_owner_required, shop_user_required
 from utils.pagination import get_page, get_search
+from utils.roles import Role
 
 suppliers_bp = Blueprint("suppliers", __name__, url_prefix="/suppliers")
+
+
+@suppliers_bp.before_request
+def _suppliers_role_guard():
+    from flask import abort, redirect, url_for
+    from flask_login import current_user
+
+    from models.platform_user import PlatformUser
+
+    if not current_user.is_authenticated:
+        return redirect(url_for("auth.login", next=request.url))
+    if isinstance(current_user, PlatformUser):
+        abort(403)
+    if not Role.matches(current_user.role, Role.ADMIN, Role.MANAGER):
+        abort(403)
 
 
 @suppliers_bp.route("/")
@@ -27,6 +43,7 @@ def suppliers_index():
 
 @suppliers_bp.route("/add", methods=["GET", "POST"])
 @shop_user_required
+@manager_or_owner_required
 def add():
     form = SupplierForm()
 
@@ -46,6 +63,7 @@ def add():
 
 @suppliers_bp.route("/edit/<int:supplier_id>", methods=["GET", "POST"])
 @shop_user_required
+@manager_or_owner_required
 def edit(supplier_id):
     supplier = SupplierService.get(current_user.shop_id, supplier_id)
     if supplier is None:
@@ -71,6 +89,7 @@ def edit(supplier_id):
 
 @suppliers_bp.route("/delete/<int:supplier_id>", methods=["POST"])
 @shop_user_required
+@manager_or_owner_required
 def delete(supplier_id):
     supplier = SupplierService.get(current_user.shop_id, supplier_id)
     if supplier is None:

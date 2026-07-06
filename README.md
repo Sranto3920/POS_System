@@ -147,16 +147,14 @@ python -m pytest tests/test_workflow.py -v
 python tests/test_workflow.py
 ```
 
-## Deployment (Render)
+## Deploy online (free)
 
-**Full step-by-step guide:** [DEPLOY_RENDER.md](DEPLOY_RENDER.md)
+**One guide only:** [DEPLOY_RENDER.md](DEPLOY_RENDER.md)
 
-> Render blueprint `databases:` creates **PostgreSQL**, not MySQL. This app needs **MySQL** — use PlanetScale or Railway and paste `DATABASE_URL` in Render.
+- **Website:** Render (free)
+- **Database:** TiDB Cloud (free MySQL — replaces your local MySQL on the internet)
 
-1. Create free MySQL on [PlanetScale](https://planetscale.com).
-2. Render → **New Web Service** → connect `Sranto3920/POS_System`.
-3. Environment: `DATABASE_URL`, `SECRET_KEY`, `FLASK_ENV=production`, `PLATFORM_OWNER_PASSWORD`.
-4. After deploy → **Shell** → `flask init-db && flask init-db --seed-platform`.
+Follow that file step by step. No other options needed.
 
 ## Screenshots
 

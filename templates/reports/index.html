@@ -1,15 +1,31 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Reports — POS System{% endblock %}
-{% block page_title %}Reports{% endblock %}
+{% block title %}{{ t('reports.title') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('reports.title') }}{% endblock %}
 {% block page_subtitle %}
-<p class="topbar-subtitle mb-0">Business analytics and shop-scoped insights</p>
+<p class="topbar-subtitle mb-0" data-i18n="reports.index_subtitle">{{ t('reports.index_subtitle') }}</p>
 {% endblock %}
 
 {% block content %}
 
+{% set report_i18n = {
+    'reports.reports_daily_sales': ('reports.daily_sales', 'reports.daily_sales_desc'),
+    'reports.reports_monthly_sales': ('reports.monthly_sales', 'reports.monthly_sales_desc'),
+    'reports.reports_purchases': ('reports.purchases_report', 'reports.purchases_report_desc'),
+    'reports.reports_customers': ('reports.customers_report', 'reports.customers_report_desc'),
+    'reports.reports_suppliers': ('reports.suppliers_report', 'reports.suppliers_report_desc'),
+    'reports.reports_products': ('reports.products_report', 'reports.products_report_desc'),
+    'reports.reports_stock': ('reports.stock_report', 'reports.stock_report_desc'),
+    'reports.reports_low_stock': ('reports.low_stock_report', 'reports.low_stock_report_desc'),
+    'reports.reports_due_customers': ('reports.due_customers', 'reports.due_customers_desc'),
+    'reports.reports_outstanding_due': ('reports.outstanding_due', 'reports.outstanding_due_desc'),
+    'reports.reports_due_collection': ('reports.due_collection', 'reports.due_collection_desc'),
+    'reports.reports_paid_vs_due': ('reports.paid_vs_due', 'reports.paid_vs_due_desc'),
+} %}
+
 <div class="row g-3 g-xl-4">
     {% for report in reports %}
+    {% set keys = report_i18n.get(report.endpoint, (report.title, report.description)) %}
     <div class="col-sm-6 col-xl-4">
         <a href="{{ url_for(report.endpoint) }}" class="text-decoration-none">
             <div class="panel-card h-100 report-card">
@@ -19,8 +35,8 @@
                             <i class="bi bi-{{ report.icon }}"></i>
                         </div>
                         <div>
-                            <h6 class="mb-1">{{ report.title }}</h6>
-                            <p class="text-muted small mb-0">{{ report.description }}</p>
+                            <h6 class="mb-1" data-i18n="{{ keys[0] }}">{{ t(keys[0]) }}</h6>
+                            <p class="text-muted small mb-0" data-i18n="{{ keys[1] }}">{{ t(keys[1]) }}</p>
                         </div>
                     </div>
                 </div>
@@ -32,15 +48,24 @@
 
 <div class="panel-card mt-4">
     <div class="panel-header">
-        <h6 class="panel-title mb-0"><i class="bi bi-download"></i> Export Data</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-download"></i> <span data-i18n="reports.export_data">{{ t('reports.export_data') }}</span></h6>
     </div>
     <div class="panel-body">
-        <p class="text-muted mb-3">Download shop data as Excel spreadsheets.</p>
+        <p class="text-muted mb-3" data-i18n="reports.export_hint">{{ t('reports.export_hint') }}</p>
         <div class="d-flex flex-wrap gap-2">
+            {% set export_labels = {
+                'products': 'nav.products',
+                'customers': 'nav.customers',
+                'suppliers': 'nav.suppliers',
+                'sales': 'nav.sales',
+                'purchases': 'nav.purchases',
+                'payments': 'nav.payments',
+                'ledger': 'nav.ledger'
+            } %}
             {% for export_type in ['products', 'customers', 'suppliers', 'sales', 'purchases', 'payments', 'ledger'] %}
             <a href="{{ url_for('exports.exports_download', export_type=export_type) }}"
                class="btn btn-outline-primary btn-sm">
-                <i class="bi bi-file-earmark-excel"></i> {{ export_type|title }}
+                <i class="bi bi-file-earmark-excel"></i> <span data-i18n="{{ export_labels[export_type] }}">{{ t(export_labels[export_type]) }}</span>
             </a>
             {% endfor %}
         </div>

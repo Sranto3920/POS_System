@@ -1,21 +1,21 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Payments — POS System{% endblock %}
-{% block page_title %}Payments{% endblock %}
-{% block page_subtitle %}<p class="topbar-subtitle mb-0">Payment collection history</p>{% endblock %}
+{% block title %}{{ t('payments.title') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('payments.title') }}{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0" data-i18n="payments.history_subtitle">{{ t('payments.history_subtitle') }}</p>{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div></div>
     <a href="{{ url_for('payments.record') }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-lg"></i> Record Payment
+        <i class="bi bi-plus-lg"></i> <span data-i18n="payments.record">{{ t('payments.record') }}</span>
     </a>
 </div>
 
 <div class="panel-card">
     <div class="panel-header d-flex justify-content-between align-items-center">
-        <h6 class="panel-title mb-0"><i class="bi bi-credit-card"></i> Payment History</h6>
-        <span class="badge bg-secondary">{{ pagination.total }} total</span>
+        <h6 class="panel-title mb-0"><i class="bi bi-credit-card"></i> <span data-i18n="payments.payment_history">{{ t('payments.payment_history') }}</span></h6>
+        <span class="badge bg-secondary" data-i18n="common.total_count">{{ t('common.total_count', count=pagination.total) }}</span>
     </div>
     <div class="panel-body">
         {% include "partials/search_form.html" %}
@@ -25,18 +25,18 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Date</th>
-                        <th>Sale</th>
-                        <th>Customer</th>
-                        <th>Method</th>
-                        <th class="text-end">Amount</th>
+                        <th data-i18n="common.date">{{ t('common.date') }}</th>
+                        <th data-i18n="common.sale">{{ t('common.sale') }}</th>
+                        <th data-i18n="common.customer">{{ t('common.customer') }}</th>
+                        <th data-i18n="common.method">{{ t('common.method') }}</th>
+                        <th class="text-end" data-i18n="common.amount">{{ t('common.amount') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for payment in payments %}
                     <tr>
                         <td>{{ payment.id }}</td>
-                        <td>{{ payment.payment_date.strftime('%b %d, %Y %I:%M %p') if payment.payment_date else '—' }}</td>
+                        <td>{{ format_date_locale(payment.payment_date, include_time=True) if payment.payment_date else '—' }}</td>
                         <td>
                             {% if payment.sale %}
                             <a href="{{ url_for('sales.view', sale_id=payment.sale.id) }}">#{{ payment.sale.id }}</a>
@@ -45,12 +45,12 @@
                             {% endif %}
                         </td>
                         <td>{{ payment.sale.customer.name if payment.sale and payment.sale.customer else '—' }}</td>
-                        <td>{{ payment.payment_method }}</td>
+                        <td>{{ translate_payment_method(payment.payment_method) }}</td>
                         <td class="text-end">{{ format_currency(payment.paid_amount) }}</td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">No payments found.</td>
+                        <td colspan="6" class="text-center text-muted py-4" data-i18n="payments.no_payments">{{ t('payments.no_payments') }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

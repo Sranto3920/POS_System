@@ -2,7 +2,7 @@
     <div class="sidebar-brand">
         <i class="bi bi-shop"></i>
         <div class="sidebar-brand-text">
-            <span class="sidebar-brand-title">POS System</span>
+            <span class="sidebar-brand-title" data-i18n="app.name">{{ t('app.name') }}</span>
             {% if current_shop %}
             <span class="sidebar-brand-shop">{{ current_shop.shop_name }}</span>
             {% endif %}
@@ -10,88 +10,97 @@
     </div>
 
     <nav class="sidebar-nav">
-        <div class="sidebar-label">Main</div>
+        <div class="sidebar-label" data-i18n="nav.main">{{ t('nav.main') }}</div>
         <a href="{{ url_for('dashboard.dashboard') }}"
            class="sidebar-link {% if request.endpoint == 'dashboard.dashboard' %}active{% endif %}">
             <i class="bi bi-speedometer2"></i>
-            <span>Dashboard</span>
-        </a>
-
-        <div class="sidebar-label">Inventory</div>
-        <a href="{{ url_for('categories.categories_index') }}"
-           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}">
-            <i class="bi bi-folder2"></i>
-            <span>Categories</span>
-        </a>
-        <a href="{{ url_for('products.products_index') }}"
-           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('products.') %}active{% endif %}">
-            <i class="bi bi-box-seam"></i>
-            <span>Products</span>
-        </a>
-        <a href="{{ url_for('suppliers.suppliers_index') }}"
-           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('suppliers.') %}active{% endif %}">
-            <i class="bi bi-truck"></i>
-            <span>Suppliers</span>
-        </a>
-
-        <div class="sidebar-label">People</div>
-        <a href="{{ url_for('customers.customers_index') }}"
-           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('customers.') %}active{% endif %}">
-            <i class="bi bi-people"></i>
-            <span>Customers</span>
-        </a>
-
-        <div class="sidebar-label">Transactions</div>
-        <a href="{{ url_for('purchases.purchases_index') }}"
-           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('purchases.') %}active{% endif %}">
-            <i class="bi bi-cart-plus"></i>
-            <span>Purchases</span>
-        </a>
-        <a href="{{ url_for('sales.sales_index') }}"
-           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('sales.') and request.endpoint != 'sales.sales_new' %}active{% endif %}">
-            <i class="bi bi-receipt"></i>
-            <span>Sales</span>
+            <span data-i18n="nav.dashboard">{{ t('nav.dashboard') }}</span>
         </a>
         <a href="{{ url_for('sales.sales_new') }}"
-           class="sidebar-link {% if request.endpoint == 'sales.sales_new' %}active{% endif %}">
+           class="sidebar-link sidebar-link-primary {% if request.endpoint == 'sales.sales_new' %}active{% endif %}">
             <i class="bi bi-cart-check"></i>
-            <span>New Sale</span>
-        </a>
-        <a href="{{ url_for('payments.payments_index') }}"
-           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('payments.') and request.endpoint != 'payments.collect_due' %}active{% endif %}">
-            <i class="bi bi-credit-card"></i>
-            <span>Payments</span>
+            <span data-i18n="nav.new_sale">{{ t('nav.new_sale') }}</span>
         </a>
         <a href="{{ url_for('payments.collect_due') }}"
            class="sidebar-link {% if request.endpoint == 'payments.collect_due' %}active{% endif %}">
             <i class="bi bi-cash-coin"></i>
-            <span>Collect Due</span>
+            <span data-i18n="nav.collect_due">{{ t('nav.collect_due') }}</span>
+        </a>
+        <a href="{{ url_for('dashboard.dashboard') }}#todays-cash"
+           class="sidebar-link">
+            <i class="bi bi-wallet2"></i>
+            <span data-i18n="nav.todays_cash">{{ t('nav.todays_cash') }}</span>
+        </a>
+
+        <div class="sidebar-label" data-i18n="nav.inventory">{{ t('nav.inventory') }}</div>
+        <a href="{{ url_for('products.products_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('products.') %}active{% endif %}">
+            <i class="bi bi-box-seam"></i>
+            <span data-i18n="nav.products">{{ t('nav.products') }}</span>
+        </a>
+        {% if current_user.has_role('admin', 'manager') %}
+        <a href="{{ url_for('purchases.purchases_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('purchases.') %}active{% endif %}">
+            <i class="bi bi-cart-plus"></i>
+            <span data-i18n="nav.purchases">{{ t('nav.purchases') }}</span>
+        </a>
+        {% endif %}
+
+        {% if current_user.has_role('admin', 'manager') %}
+        <div class="sidebar-label" data-i18n="nav.people">{{ t('nav.people') }}</div>
+        <a href="{{ url_for('customers.customers_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('customers.') %}active{% endif %}">
+            <i class="bi bi-people"></i>
+            <span data-i18n="nav.customers">{{ t('nav.customers') }}</span>
         </a>
         <a href="{{ url_for('ledger.ledger_index') }}"
            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('ledger.') %}active{% endif %}">
             <i class="bi bi-journal-text"></i>
-            <span>Customer Ledger</span>
+            <span data-i18n="nav.ledger">{{ t('nav.ledger') }}</span>
         </a>
+        {% endif %}
 
-        <div class="sidebar-label">Insights</div>
+        {% if current_user.has_role('admin', 'manager') %}
+        <div class="sidebar-label" data-i18n="nav.more">{{ t('nav.more') }}</div>
+        <a href="{{ url_for('categories.categories_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('categories.') %}active{% endif %}">
+            <i class="bi bi-folder2"></i>
+            <span data-i18n="nav.categories">{{ t('nav.categories') }}</span>
+        </a>
+        <a href="{{ url_for('suppliers.suppliers_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('suppliers.') %}active{% endif %}">
+            <i class="bi bi-truck"></i>
+            <span data-i18n="nav.suppliers">{{ t('nav.suppliers') }}</span>
+        </a>
+        <a href="{{ url_for('sales.sales_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('sales.') and request.endpoint != 'sales.sales_new' %}active{% endif %}">
+            <i class="bi bi-receipt"></i>
+            <span data-i18n="nav.sales">{{ t('nav.sales') }}</span>
+        </a>
+        <a href="{{ url_for('payments.payments_index') }}"
+           class="sidebar-link {% if request.endpoint and request.endpoint.startswith('payments.') and request.endpoint != 'payments.collect_due' %}active{% endif %}">
+            <i class="bi bi-credit-card"></i>
+            <span data-i18n="nav.payments">{{ t('nav.payments') }}</span>
+        </a>
         <a href="{{ url_for('reports.reports_index') }}"
            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('reports.') %}active{% endif %}">
             <i class="bi bi-bar-chart-line"></i>
-            <span>Reports</span>
+            <span data-i18n="nav.reports">{{ t('nav.reports') }}</span>
         </a>
-
-        <div class="sidebar-label">Account</div>
         {% if current_user.has_role('admin') %}
         <a href="{{ url_for('users.users_index') }}"
            class="sidebar-link {% if request.endpoint and request.endpoint.startswith('users.') %}active{% endif %}">
             <i class="bi bi-person-gear"></i>
-            <span>User Management</span>
+            <span data-i18n="nav.users">{{ t('nav.users') }}</span>
         </a>
         {% endif %}
+        {% endif %}
+
+        <div class="sidebar-label" data-i18n="nav.account">{{ t('nav.account') }}</div>
         <a href="{{ url_for('profile.index') }}"
            class="sidebar-link {% if request.endpoint == 'profile.index' %}active{% endif %}">
             <i class="bi bi-person-circle"></i>
-            <span>Profile</span>
+            <span data-i18n="nav.profile">{{ t('nav.profile') }}</span>
         </a>
     </nav>
 
@@ -100,7 +109,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="sidebar-link sidebar-logout w-100 border-0 bg-transparent">
                 <i class="bi bi-box-arrow-left"></i>
-                <span>Logout</span>
+                <span data-i18n="nav.logout">{{ t('nav.logout') }}</span>
             </button>
         </form>
     </div>

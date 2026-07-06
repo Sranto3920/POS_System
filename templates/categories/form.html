@@ -1,10 +1,14 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}{{ title }} — POS System{% endblock %}
-{% block page_title %}{{ title }}{% endblock %}
+{% block title %}{% if category %}{{ t('categories.edit') }}{% else %}{{ t('categories.new') }}{% endif %} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{% if category %}{{ t('categories.edit') }}{% else %}{{ t('categories.new') }}{% endif %}{% endblock %}
 {% block page_subtitle %}
 <p class="topbar-subtitle mb-0">
-    {% if category %}Editing {{ category.name }}{% else %}Create a new product category{% endif %}
+    {% if category %}
+    <span data-i18n="categories.editing">{{ t('categories.editing', name=category.name) }}</span>
+    {% else %}
+    <span data-i18n="categories.create_subtitle">{{ t('categories.create_subtitle') }}</span>
+    {% endif %}
 </p>
 {% endblock %}
 
@@ -14,23 +18,29 @@
     <div class="col-lg-8">
         <div class="panel-card">
             <div class="panel-header">
-                <h6 class="panel-title mb-0"><i class="bi bi-folder2"></i> {{ title }}</h6>
+                <h6 class="panel-title mb-0"><i class="bi bi-folder2"></i>
+                    {% if category %}
+                    <span data-i18n="categories.edit">{{ t('categories.edit') }}</span>
+                    {% else %}
+                    <span data-i18n="categories.new">{{ t('categories.new') }}</span>
+                    {% endif %}
+                </h6>
             </div>
             <div class="panel-body">
                 <form method="POST" novalidate>
                     {{ form.hidden_tag() }}
 
                     <div class="mb-3">
-                        {{ form.name.label(class="form-label") }}
-                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="e.g. Beverages") }}
+                        <label class="form-label" for="{{ form.name.id }}" data-i18n="common.name">{{ t('common.name') }}</label>
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder=t('categories.name_placeholder'), **{'data-i18n-placeholder': 'categories.name_placeholder'}) }}
                         {% for error in form.name.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                         {% endfor %}
                     </div>
 
                     <div class="mb-3">
-                        {{ form.description.label(class="form-label") }}
-                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3, placeholder="Optional description") }}
+                        <label class="form-label" for="{{ form.description.id }}" data-i18n="categories.description">{{ t('categories.description') }}</label>
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=3, placeholder=t('categories.description_optional'), **{'data-i18n-placeholder': 'categories.description_optional'}) }}
                         {% for error in form.description.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                         {% endfor %}
@@ -38,10 +48,15 @@
 
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('categories.categories_index') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Cancel
+                            <i class="bi bi-arrow-left"></i> <span data-i18n="common.cancel">{{ t('common.cancel') }}</span>
                         </a>
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg"></i> {{ submit_label }}
+                            <i class="bi bi-check-lg"></i>
+                            {% if category %}
+                            <span data-i18n="categories.save_changes">{{ t('categories.save_changes') }}</span>
+                            {% else %}
+                            <span data-i18n="categories.create">{{ t('categories.create') }}</span>
+                            {% endif %}
                         </button>
                     </div>
                 </form>

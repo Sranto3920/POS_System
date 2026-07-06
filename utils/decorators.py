@@ -35,7 +35,7 @@ def platform_required(view_func):
     @wraps(view_func)
     def wrapped(*args, **kwargs):
         if not current_user.is_authenticated:
-            return redirect(url_for("platform_auth.login", next=request.url))
+            return redirect(url_for("owner_auth.login", next=request.url))
         if not isinstance(current_user, PlatformUser):
             abort(403)
         if not current_user.is_active:
@@ -57,3 +57,13 @@ def shop_user_required(view_func):
         return view_func(*args, **kwargs)
 
     return wrapped
+
+
+def owner_required(view_func):
+    """Shop owner (admin) only."""
+    return role_required(Role.ADMIN)(view_func)
+
+
+def manager_or_owner_required(view_func):
+    """Admin or manager — blocks cashier/salesman."""
+    return role_required(Role.ADMIN, Role.MANAGER)(view_func)

@@ -1,110 +1,202 @@
-# Deploy POS System on Render (Step 4 & 5)
+# Complete Deploy Guide — Free MySQL + Online Website
 
-## Why your first deploy failed
-
-Your `render.yaml` had this block:
-
-```yaml
-databases:
-  - name: pos-mysql
-```
-
-**On Render, `databases:` always creates PostgreSQL — not MySQL.**
-
-Your Flask app uses **MySQL** (`PyMySQL`). Render linked a `postgresql://...` URL to `DATABASE_URL`, so the web service crashed on startup.
-
-The database step showed green, but the web service failed because the wrong database type was connected.
+Read this **from top to bottom**. Do not skip steps.
 
 ---
 
-## Fix your current Render project
+## What you are building
 
-### 1. Clean up the wrong resources
+```
+┌─────────────────┐         ┌─────────────────┐
+│   TiDB Cloud    │         │     Render      │
+│  (MySQL online) │ ◄────── │  (your website) │
+│     FREE        │         │      FREE       │
+└─────────────────┘         └─────────────────┘
+        ▲                           │
+        │                           ▼
+   DATABASE_URL              https://your-app.onrender.com
+   (connection string)        (public link for everyone)
+```
 
-In [Render Dashboard](https://dashboard.render.com):
+- **Your Mac MySQL** = only works on your computer (`localhost`)
+- **TiDB Cloud** = MySQL on the internet (free)
+- **Render** = hosts your Flask app (free)
 
-1. Open your **POS** Blueprint → **Settings** → **Delete Blueprint** (or delete resources manually).
-2. Delete the **`pos-mysql`** database (it is PostgreSQL, not MySQL).
-3. Delete the failed **`pos-system`** web service if it still exists.
+**Total cost: $0**
 
-### 2. Push the fixed code
+---
+
+## PART 0 — Before you start (5 minutes)
+
+### 0.1 Check GitHub has your code
+
+1. Open browser: **https://github.com/Sranto3920/POS_System**
+2. You should see your project files (`app.py`, `README.md`, etc.)
+
+If code is not there, run on your Mac Terminal:
 
 ```bash
 cd /Users/asmaulhasabsranto/POS_System
-git add render.yaml config.py scripts/ DEPLOY_RENDER.md runtime.txt
-git commit -m "Fix Render deploy: MySQL via external DATABASE_URL"
+git add .
+git commit -m "Prepare for deploy"
 git push origin main
 ```
 
----
+### 0.2 Delete old failed Render project (important)
 
-## Step 5: Create a production MySQL database
+Your first deploy failed because Render created **PostgreSQL**, not MySQL.
 
-You need a **hosted MySQL** URL. Pick one option:
+1. Go to **https://dashboard.render.com**
+2. If you see a **POS** blueprint or **pos-mysql** database → delete them
+3. Delete failed **pos-system** web service if it exists
 
-### Option A — PlanetScale (recommended, free tier)
-
-1. Go to [planetscale.com](https://planetscale.com) → Sign up.
-2. **Create database** → name: `pos_inventory_db`.
-3. Click **Connect** → choose **General** → copy the connection string.
-4. It looks like:
-   ```
-   mysql://xxxx:pscale_pw_xxxx@aws.connect.psdb.cloud/pos_inventory_db?ssl={"rejectUnauthorized":true}
-   ```
-5. For SQLAlchemy, use this format in Render:
-   ```
-   mysql+pymysql://USER:PASSWORD@HOST/pos_inventory_db?ssl_ca=/etc/ssl/certs/ca-certificates.crt
-   ```
-   Or simpler (PlanetScale often works with):
-   ```
-   mysql+pymysql://USER:PASSWORD@aws.connect.psdb.cloud/pos_inventory_db?ssl_verify_cert=true
-   ```
-
-   **Tip:** In PlanetScale → Connect → "SQLAlchemy" if available, copy that URL directly.
-
-### Option B — Railway MySQL
-
-1. [railway.app](https://railway.app) → New Project → **Add MySQL**.
-2. Open MySQL service → **Variables** → copy `MYSQL_URL` or individual `MYSQLHOST`, `MYSQLUSER`, etc.
-3. Build URL:
-   ```
-   mysql+pymysql://USER:PASS@HOST:PORT/railway
-   ```
-
-### Option C — Aiven MySQL (free trial)
-
-1. [aiven.io](https://aiven.io) → Create MySQL service.
-2. Copy **Service URI** and change `mysql://` to `mysql+pymysql://`.
+You will create everything fresh below.
 
 ---
 
-## Step 4: Deploy web service on Render
+# PART 1 — DATABASE (TiDB Cloud) — Do this FIRST
 
-### Method 1 — Blueprint (updated repo)
+TiDB Cloud = **free online MySQL** (works like MySQL on your Mac).
 
-1. Render Dashboard → **New +** → **Blueprint**.
-2. Connect repo: `Sranto3920/POS_System` → branch `main`.
-3. Render reads the new `render.yaml` (web service only).
-4. When prompted for **`DATABASE_URL`**, paste your **MySQL** URL from Step 5.
-5. Click **Apply**.
+---
 
-### Method 2 — Manual web service (easiest to debug)
+### Step 1.1 — Create TiDB account
 
-1. **New +** → **Web Service**.
-2. Connect GitHub → `Sranto3920/POS_System`.
-3. Settings:
+1. Open: **https://tidbcloud.com**
+2. Click **Get Started for Free** (or **Sign Up**)
+3. Sign up with **Google** or **Email**
+4. Verify email if asked
+5. You land on TiDB Cloud dashboard
+
+---
+
+### Step 1.2 — Create a free cluster
+
+1. Click **Create Cluster** (or **New Cluster**)
+2. Select **TiDB Cloud Serverless** (must say **Serverless** = free)
+3. Fill in:
+   - **Cluster Name:** `pos-cluster`
+   - **Region:** `AWS - Singapore` (or closest to Bangladesh)
+   - **Encryption:** leave default
+4. Click **Create**
+5. Wait 1–3 minutes until status shows **Active** (green)
+
+---
+
+### Step 1.3 — Create the database name
+
+1. Click your cluster name **`pos-cluster`**
+2. Left menu → click **SQL Editor** (or **Chat2Query**)
+3. In the SQL box, type exactly:
+
+```sql
+CREATE DATABASE pos_inventory_db;
+```
+
+4. Click **Run** (or press Ctrl+Enter)
+5. You should see success message
+
+---
+
+### Step 1.4 — Get username, password, host
+
+1. Go back to cluster page
+2. Click **Connect** button (top area)
+3. Select **Public** (not VPC)
+4. You may need to click **Create Password** or **Generate Password** for the user
+5. Write down these 4 values in Notepad:
+
+| What to copy | Where you see it | Example |
+|--------------|------------------|---------|
+| **Host** | Endpoint / Host | `gateway01.ap-southeast-1.prod.aws.tidbcloud.com` |
+| **Port** | Port | `4000` |
+| **User** | Username | `2abc123.root` |
+| **Password** | Password | `xxxxxxxx` |
+| **Database** | You created this | `pos_inventory_db` |
+
+> **Important:** Port is **4000** (NOT 3306)
+
+---
+
+### Step 1.5 — Build DATABASE_URL (copy-paste formula)
+
+Open Notepad. Replace the CAPITAL words with YOUR values from Step 1.4:
+
+```
+mysql+pymysql://USER:PASSWORD@HOST:4000/pos_inventory_db
+```
+
+**Filled example** (yours will look similar but different values):
+
+```
+mysql+pymysql://2abc123.root:MyTiDBpass99@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/pos_inventory_db
+```
+
+**Password has special characters?** Replace before pasting in Render:
+
+| Character | Replace with |
+|-----------|--------------|
+| `@` | `%40` |
+| `#` | `%23` |
+| `!` | `%21` |
+| `$` | `%24` |
+| `&` | `%26` |
+
+**Save this full line.** You need it in Part 2.
+
+**Test:** Your URL must:
+- Start with `mysql+pymysql://`
+- Contain `@` before the host
+- End with `/pos_inventory_db`
+- Have port `:4000` before `/pos_inventory_db`
+
+---
+
+# PART 2 — WEBSITE (Render) — Do this SECOND
+
+---
+
+### Step 2.1 — Create Render account
+
+1. Open: **https://render.com**
+2. Click **Get Started**
+3. Sign up with **GitHub** (easiest — connects your repo)
+4. Allow Render to access GitHub when asked
+
+---
+
+### Step 2.2 — Create Web Service
+
+1. On Render dashboard, click **New +** (top right)
+2. Click **Web Service**
+3. Under **Connect a repository**, find **`Sranto3920/POS_System`**
+   - If not listed: click **Configure account** → give Render access to the repo
+4. Click **Connect** next to your repo
+
+---
+
+### Step 2.3 — Fill service settings
+
+Copy each value exactly:
 
 | Setting | Value |
 |---------|--------|
-| Name | `pos-system` |
-| Region | Singapore (or nearest) |
-| Branch | `main` |
-| Runtime | Python 3 |
-| Build Command | `./scripts/render_build.sh` |
-| Start Command | `gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120` |
-| Plan | Free |
+| **Name** | `pos-system` |
+| **Region** | Singapore (or closest) |
+| **Branch** | `main` |
+| **Root Directory** | *(leave empty)* |
+| **Runtime** | `Python 3` |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `gunicorn wsgi:application --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120` |
+| **Instance Type** | **Free** |
 
-4. **Environment variables:**
+Scroll down to **Environment Variables**.
+
+---
+
+### Step 2.4 — Add environment variables
+
+Click **Add Environment Variable** for each row:
 
 | Key | Value |
 |-----|--------|
@@ -112,99 +204,165 @@ You need a **hosted MySQL** URL. Pick one option:
 | `FLASK_APP` | `app.py` |
 | `FLASK_ENV` | `production` |
 | `FLASK_DEBUG` | `0` |
-| `SECRET_KEY` | *(Generate — click Generate)* |
-| `DATABASE_URL` | `mysql+pymysql://user:pass@host:3306/pos_inventory_db` |
-| `PLATFORM_OWNER_PASSWORD` | *(your strong password)* |
+| `SECRET_KEY` | Click **Generate** button, or type 50 random letters |
+| `DATABASE_URL` | Paste your full URL from **Step 1.5** |
+| `PLATFORM_OWNER_EMAIL` | `owner@posplatform.com` |
+| `PLATFORM_OWNER_PASSWORD` | Pick a password you will remember (e.g. `BhaiBhai2026!`) |
 
-5. Click **Create Web Service**.
+Double-check `DATABASE_URL` — no spaces at start or end.
 
 ---
 
-## Initialize the production database (once)
+### Step 2.5 — Deploy
 
-After the web service is **Live**:
+1. Click **Create Web Service** (bottom)
+2. Render starts building (you see logs scrolling)
+3. Wait 3–8 minutes
+4. When successful, top shows **Live** with green dot
+5. Your URL is at the top, like:
 
-1. Open the service → **Shell** tab.
-2. Run:
+```
+https://pos-system-abcd.onrender.com
+```
+
+Copy and save this URL.
+
+---
+
+### Step 2.6 — If deploy FAILED (red)
+
+1. Click **Logs** tab
+2. Read the last 10–20 lines
+
+| Error in logs | What to do |
+|---------------|------------|
+| `PostgreSQL` / `requires MySQL` | Wrong `DATABASE_URL` — must be `mysql+pymysql://...` |
+| `Can't connect` / `Connection refused` | TiDB cluster not Active, or wrong host/port |
+| `Access denied` | Wrong password in `DATABASE_URL` |
+| `ModuleNotFoundError` | Build failed — check Build logs |
+
+Fix the problem → **Manual Deploy** → **Deploy latest commit**
+
+---
+
+# PART 3 — CREATE TABLES (one time, after Live)
+
+Your cloud database is empty. You must create tables once.
+
+### Step 3.1 — Open Render Shell
+
+1. Render dashboard → click your **`pos-system`** service
+2. Top menu → click **Shell**
+3. Wait for terminal to open inside browser
+
+### Step 3.2 — Run commands (one at a time)
+
+Type command 1, press Enter, wait for finish:
 
 ```bash
 flask init-db
+```
+
+You should see: `Database ready.`
+
+Type command 2, press Enter:
+
+```bash
 flask init-db --seed-platform
 ```
 
-3. Optional demo shop users (set passwords in env first):
+You should see: `Platform owner created: owner@posplatform.com`
 
-```bash
-flask init-db --seed
+If you see `Platform owner already exists` — that is OK.
+
+---
+
+# PART 4 — USE YOUR ONLINE APP
+
+### Step 4.1 — Platform Owner login
+
+1. Open browser: `https://YOUR-APP-URL.onrender.com/platform/login`
+2. Email: `owner@posplatform.com`
+3. Password: your `PLATFORM_OWNER_PASSWORD` from Step 2.4
+
+### Step 4.2 — Create your shop
+
+1. After login → **Create Shop** (or Shops → Create)
+2. Fill in:
+   - Shop name: e.g. `M/S Bhai Bhai Enterprise`
+   - Admin name, email, password for shop staff
+3. Save
+
+### Step 4.3 — Shop staff login
+
+1. Logout from platform
+2. Go to: `https://YOUR-APP-URL.onrender.com/login`
+3. Login with the **shop admin** email/password you just created
+
+### Step 4.4 — Test the app
+
+Do this once to confirm everything works:
+
+1. Add **Supplier**
+2. Add **Customer**
+3. Add **Product**
+4. **Purchase** (stock increases)
+5. **New Sale** (stock decreases)
+6. Try **partial payment** (due/halkhata)
+
+---
+
+# PART 5 — Local vs Online (do not confuse)
+
+| | Local (your Mac) | Online (Render) |
+|--|------------------|-----------------|
+| Run app | `PORT=5001 python app.py` | Automatic on Render |
+| Open app | `http://127.0.0.1:5001` | `https://pos-system-xxxx.onrender.com` |
+| Database | MySQL on Mac (`.env` file) | TiDB (`DATABASE_URL` on Render) |
+| Data | Separate | Separate |
+
+Changes on local **do not** appear online. They use different databases.
+
+---
+
+# Quick checklist — tick when done
+
+**Database (TiDB)**
+- [ ] TiDB account created
+- [ ] Serverless cluster **Active**
+- [ ] `CREATE DATABASE pos_inventory_db` ran successfully
+- [ ] `DATABASE_URL` saved in Notepad
+
+**Website (Render)**
+- [ ] Old failed blueprint deleted
+- [ ] Web service created from GitHub repo
+- [ ] All 8 environment variables set
+- [ ] Status is **Live**
+- [ ] `flask init-db` ran in Shell
+- [ ] `flask init-db --seed-platform` ran in Shell
+
+**Test**
+- [ ] Platform login works
+- [ ] Shop created
+- [ ] Shop login works
+- [ ] Sale completed
+
+---
+
+# Still stuck?
+
+Send these 3 things:
+
+1. Screenshot of Render **Logs** (last 20 lines)
+2. Screenshot of TiDB cluster page (showing **Active**)
+3. First 30 characters of your `DATABASE_URL` only (hide password), e.g. `mysql+pymysql://2abc123.root:****@gate...`
+
+---
+
+# One-line summary
+
+```
+TiDB (free MySQL) → copy DATABASE_URL → Render (paste env vars) → Shell: flask init-db → open URL → login
 ```
 
-4. Open your app URL: `https://pos-system-xxxx.onrender.com`
-
-| Portal | URL |
-|--------|-----|
-| Platform Owner | `/platform/login` |
-| Shop Login | `/login` |
-
----
-
-## Create your first shop (production)
-
-1. Login at `/platform/login` with platform owner credentials.
-2. **Create Shop** → fill shop name + first admin email/password.
-3. Logout → login at `/login` with the shop admin you created.
-4. Add supplier → customer → product → purchase → sale.
-
----
-
-## Troubleshooting
-
-### Deploy still fails — check Logs
-
-Render → your service → **Logs** → look for:
-
-| Error | Fix |
-|-------|-----|
-| `PostgreSQL, but this app requires MySQL` | Wrong `DATABASE_URL` — use MySQL URL |
-| `Can't connect to MySQL server` | Wrong host/password; check SSL params for PlanetScale |
-| `ModuleNotFoundError: gunicorn` | Build failed — check Build logs |
-| `Permission denied: ./scripts/render_build.sh` | Fixed in repo; or use `pip install -r requirements.txt` as build command |
-| `SECRET_KEY` warning | Set `SECRET_KEY` env var |
-
-### Make build script executable (if needed)
-
-Locally:
-
-```bash
-chmod +x scripts/render_build.sh
-git add scripts/render_build.sh
-git commit -m "Make render build script executable"
-git push
-```
-
-### Free tier notes
-
-- Render free web services **sleep after 15 min** — first visit may take ~30 seconds.
-- Free MySQL on Render does **not** exist as managed DB — use PlanetScale/Railway.
-- Change all passwords after first login.
-
----
-
-## Quick checklist
-
-- [ ] Deleted old PostgreSQL `pos-mysql` from failed blueprint
-- [ ] Created hosted **MySQL** (PlanetScale / Railway / Aiven)
-- [ ] Deployed web service with `mysql+pymysql://...` in `DATABASE_URL`
-- [ ] Ran `flask init-db` and `flask init-db --seed-platform` in Render Shell
-- [ ] Created shop via Platform Owner portal
-- [ ] Tested login, sale, and collect due
-- [ ] Updated README with live demo URL
-
----
-
-## Your URLs (fill in after deploy)
-
-| Item | URL |
-|------|-----|
-| Live app | `https://________________.onrender.com` |
-| GitHub | `https://github.com/Sranto3920/POS_System` |
-| PlanetScale DB | *(dashboard link)* |
+That is everything. Follow Part 1, then Part 2, then Part 3, then Part 4.

@@ -1,13 +1,13 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}New Purchase — POS System{% endblock %}
-{% block page_title %}New Purchase{% endblock %}
-{% block page_subtitle %}<p class="topbar-subtitle mb-0">Record stock received from a supplier</p>{% endblock %}
+{% block title %}{{ t('purchases.new') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('purchases.new') }}{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0" data-i18n="purchases.new_subtitle">{{ t('purchases.new_subtitle') }}</p>{% endblock %}
 
 {% block content %}
 <div class="panel-card">
     <div class="panel-header">
-        <h6 class="panel-title mb-0"><i class="bi bi-cart-plus"></i> Purchase Details</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-cart-plus"></i> <span data-i18n="purchases.details">{{ t('purchases.details') }}</span></h6>
     </div>
     <div class="panel-body">
         <form method="POST" id="purchase-form">
@@ -15,9 +15,9 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label for="supplier_id" class="form-label">Supplier <span class="text-danger">*</span></label>
+                    <label for="supplier_id" class="form-label"><span data-i18n="common.supplier">{{ t('common.supplier') }}</span> <span class="text-danger">*</span></label>
                     <select name="supplier_id" id="supplier_id" class="form-select" required>
-                        <option value="">Select supplier...</option>
+                        <option value="" data-i18n="purchases.select_supplier">{{ t('purchases.select_supplier') }}</option>
                         {% for supplier in suppliers %}
                         <option value="{{ supplier.id }}">{{ supplier.name }}</option>
                         {% endfor %}
@@ -25,14 +25,14 @@
                 </div>
             </div>
 
-            <h6 class="mb-3">Line Items</h6>
+            <h6 class="mb-3" data-i18n="common.line_items">{{ t('common.line_items') }}</h6>
             <div class="table-responsive mb-3">
                 <table class="table table-sm align-middle">
                     <thead>
                         <tr>
-                            <th style="min-width: 220px;">Product</th>
-                            <th style="width: 120px;">Quantity</th>
-                            <th style="width: 140px;">Cost Price</th>
+                            <th style="min-width: 220px;" data-i18n="common.product">{{ t('common.product') }}</th>
+                            <th style="width: 120px;" data-i18n="common.quantity">{{ t('common.quantity') }}</th>
+                            <th style="width: 140px;" data-i18n="products.cost_price">{{ t('products.cost_price') }}</th>
                             <th style="width: 80px;"></th>
                         </tr>
                     </thead>
@@ -40,9 +40,9 @@
                         <tr class="line-item-row">
                             <td>
                                 <select name="product_id[]" class="form-select form-select-sm product-select" required>
-                                    <option value="">Select product...</option>
+                                    <option value="" data-i18n="purchases.select_product">{{ t('purchases.select_product') }}</option>
                                     {% for product in products %}
-                                    <option value="{{ product.id }}" data-cost="{{ product.cost_price }}">{{ product.name }} (Stock: {{ product.stock_quantity }})</option>
+                                    <option value="{{ product.id }}" data-cost="{{ product.cost_price }}">{{ product.name }} ({{ t('purchases.stock_qty', qty=product.stock_quantity) }})</option>
                                     {% endfor %}
                                 </select>
                             </td>
@@ -53,7 +53,7 @@
                                 <input type="number" name="cost_price[]" class="form-control form-control-sm cost-price-input" min="0" step="0.01" required>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-outline-danger btn-sm remove-line" title="Remove line">
+                                <button type="button" class="btn btn-outline-danger btn-sm remove-line" data-i18n-title="purchases.remove_line" title="{{ t('purchases.remove_line') }}">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
@@ -63,12 +63,12 @@
             </div>
 
             <button type="button" class="btn btn-outline-secondary btn-sm mb-4" id="add-line-btn">
-                <i class="bi bi-plus-lg"></i> Add Line
+                <i class="bi bi-plus-lg"></i> <span data-i18n="purchases.add_line">{{ t('purchases.add_line') }}</span>
             </button>
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Save Purchase</button>
-                <a href="{{ url_for('purchases.purchases_index') }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary"><span data-i18n="purchases.save">{{ t('purchases.save') }}</span></button>
+                <a href="{{ url_for('purchases.purchases_index') }}" class="btn btn-outline-secondary"><span data-i18n="common.cancel">{{ t('common.cancel') }}</span></a>
             </div>
         </form>
     </div>
@@ -78,9 +78,9 @@
     <tr class="line-item-row">
         <td>
             <select name="product_id[]" class="form-select form-select-sm product-select" required>
-                <option value="">Select product...</option>
+                <option value="" data-i18n="purchases.select_product">{{ t('purchases.select_product') }}</option>
                 {% for product in products %}
-                <option value="{{ product.id }}" data-cost="{{ product.cost_price }}">{{ product.name }} (Stock: {{ product.stock_quantity }})</option>
+                <option value="{{ product.id }}" data-cost="{{ product.cost_price }}">{{ product.name }} ({{ t('purchases.stock_qty', qty=product.stock_quantity) }})</option>
                 {% endfor %}
             </select>
         </td>
@@ -91,7 +91,7 @@
             <input type="number" name="cost_price[]" class="form-control form-control-sm cost-price-input" min="0" step="0.01" required>
         </td>
         <td>
-            <button type="button" class="btn btn-outline-danger btn-sm remove-line" title="Remove line">
+            <button type="button" class="btn btn-outline-danger btn-sm remove-line" data-i18n-title="purchases.remove_line" title="{{ t('purchases.remove_line') }}">
                 <i class="bi bi-trash"></i>
             </button>
         </td>

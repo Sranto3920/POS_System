@@ -1,0 +1,76 @@
+{% extends "layouts/auth.html" %}
+
+{% block title %}{{ t('auth.owner_title') }} — {{ t('app.name') }}{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card-wrap">
+        <div class="card auth-card">
+            <div class="card-body auth-card-body">
+                <div class="text-center">
+                    <div class="owner-login-icon"><i class="bi bi-shield-lock"></i></div>
+                    <h1 class="auth-shop-name h4" data-i18n="auth.owner_title">{{ t('auth.owner_title') }}</h1>
+                    <p class="text-muted mb-0" data-i18n="auth.owner_subtitle">{{ t('auth.owner_subtitle') }}</p>
+                </div>
+
+                <form method="POST" class="mt-4" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.email(
+                            class="form-control auth-input-lg" + (" is-invalid" if form.email.errors or login_error else ""),
+                            placeholder=t('auth.email_placeholder'),
+                            autocomplete="email",
+                            autofocus=true
+                        ) }}
+                        {% if form.email.errors %}
+                            {% for error in form.email.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        {% elif login_error %}
+                            <div class="invalid-feedback d-block" data-i18n="msg.login_failed_retry">{{ t('msg.login_failed_retry') }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="password-input-wrap">
+                            {{ form.password(
+                                class="form-control auth-input-lg" + (" is-invalid" if form.password.errors or login_error else ""),
+                                placeholder=t('auth.password_placeholder'),
+                                autocomplete="current-password",
+                                id="owner-password"
+                            ) }}
+                            <button type="button" class="password-toggle-btn" data-target="owner-password" tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        {% for error in form.password.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-4 form-check auth-remember">
+                        {{ form.remember_me(class="form-check-input") }}
+                        <label class="form-check-label" data-i18n="auth.remember_me">{{ t('auth.remember_me') }}</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark auth-btn-login w-100">
+                        <i class="bi bi-box-arrow-in-right"></i>
+                        <span data-i18n="auth.login">{{ t('auth.login') }}</span>
+                    </button>
+                </form>
+            </div>
+            <div class="auth-card-footer">
+                <a href="{{ url_for('auth.login') }}" class="auth-back-link mt-0">
+                    <i class="bi bi-arrow-left"></i>
+                    <span data-i18n="auth.back_to_shop">{{ t('auth.back_to_shop') }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

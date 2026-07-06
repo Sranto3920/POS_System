@@ -72,23 +72,25 @@
         }
 
         if (paymentStatusEl) {
-            let status = 'Paid';
+            const tr = window.t || function (k) { return k; };
+            let statusKey = 'status.paid';
             let badge = 'bg-success';
             if (due > 0 && paid > 0) {
-                status = 'Partially Paid';
+                statusKey = 'status.partially_paid';
                 badge = 'bg-warning text-dark';
             } else if (due > 0) {
-                status = 'Due';
+                statusKey = 'status.due';
                 badge = 'bg-danger';
             }
-            paymentStatusEl.textContent = status;
+            paymentStatusEl.textContent = tr(statusKey);
             paymentStatusEl.className = 'badge ' + badge;
+            paymentStatusEl.setAttribute('data-i18n', statusKey);
         }
 
         if (paid > total) {
-            paidAmount.setCustomValidity('Paid amount cannot exceed grand total.');
+            paidAmount.setCustomValidity((window.t || function (k) { return k; })('sales.paid_exceeds_total'));
         } else if (due > 0 && customerSelect && String(customerSelect.value) === String(config.walkinCustomerId)) {
-            paidAmount.setCustomValidity('Select a registered customer for due sales.');
+            paidAmount.setCustomValidity((window.t || function (k) { return k; })('sales.due_needs_customer'));
         } else {
             paidAmount.setCustomValidity('');
         }
@@ -191,7 +193,8 @@
         if (!products.length) {
             const empty = document.createElement('div');
             empty.className = 'list-group-item text-muted';
-            empty.textContent = 'No products found.';
+            empty.setAttribute('data-i18n', 'sales.no_products_found');
+            empty.textContent = (window.t || function (k) { return k; })('sales.no_products_found');
             searchResults.appendChild(empty);
             searchResults.classList.remove('d-none');
             return;
@@ -285,7 +288,7 @@
         saleForm.addEventListener('submit', function (event) {
             if (!getRows().length) {
                 event.preventDefault();
-                alert('Add at least one product to the cart.');
+                alert((window.t || function (k) { return k; })('sales.add_product_alert'));
                 return;
             }
             if (!saleForm.reportValidity()) {

@@ -187,8 +187,11 @@ class SaleService:
             if paid_amount > 0:
                 payment = Payment(
                     sale_id=sale.id,
+                    shop_id=shop_id,
+                    user_id=user_id,
                     payment_method=payment_method,
                     paid_amount=paid_amount,
+                    payment_type="sale",
                 )
                 db.session.add(payment)
 

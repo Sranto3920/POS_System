@@ -1,31 +1,31 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Categories — POS System{% endblock %}
-{% block page_title %}Categories{% endblock %}
+{% block title %}{{ t('categories.title') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('categories.title') }}{% endblock %}
 {% block page_subtitle %}
-<p class="topbar-subtitle mb-0">Organize products into categories for your shop</p>
+<p class="topbar-subtitle mb-0" data-i18n="categories.index_subtitle">{{ t('categories.index_subtitle') }}</p>
 {% endblock %}
 
 {% block content %}
 
 <div class="panel-card">
     <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h6 class="panel-title mb-0"><i class="bi bi-folder2"></i> Categories</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-folder2"></i> <span data-i18n="categories.title">{{ t('categories.title') }}</span></h6>
         <a href="{{ url_for('categories.add') }}" class="btn btn-sm btn-primary">
-            <i class="bi bi-plus-lg"></i> Add Category
+            <i class="bi bi-plus-lg"></i> <span data-i18n="categories.add">{{ t('categories.add') }}</span>
         </a>
     </div>
     <div class="panel-body">
-        {% set placeholder = "Search categories..." %}
+        {% set placeholder = t('categories.search_placeholder') %}
         {% include "partials/search_form.html" %}
 
         <div class="table-responsive">
             <table class="table table-hover dashboard-table mb-0">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Description</th>
-                        <th class="text-end" style="width: 140px;">Actions</th>
+                        <th data-i18n="common.name">{{ t('common.name') }}</th>
+                        <th data-i18n="categories.description">{{ t('categories.description') }}</th>
+                        <th class="text-end" style="width: 140px;" data-i18n="common.actions">{{ t('common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -35,14 +35,14 @@
                         <td>{{ category.description or '—' }}</td>
                         <td class="text-end">
                             <a href="{{ url_for('categories.edit', category_id=category.id) }}"
-                               class="btn btn-sm btn-outline-primary" title="Edit">
+                               class="btn btn-sm btn-outline-primary" data-i18n-title="common.edit" title="{{ t('common.edit') }}">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <form action="{{ url_for('categories.delete', category_id=category.id) }}"
                                   method="POST" class="d-inline"
-                                  onsubmit="return confirm('Delete this category?');">
+                                  onsubmit="return confirm('{{ t('categories.delete_confirm') }}');">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" data-i18n-title="common.delete" title="{{ t('common.delete') }}">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
@@ -51,7 +51,11 @@
                     {% else %}
                     <tr>
                         <td colspan="3" class="text-center text-muted py-4">
-                            {% if search_q %}No categories match your search.{% else %}No categories yet. Add your first category.{% endif %}
+                            {% if search_q %}
+                            <span data-i18n="categories.no_match">{{ t('categories.no_match') }}</span>
+                            {% else %}
+                            <span data-i18n="categories.no_yet">{{ t('categories.no_yet') }}</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

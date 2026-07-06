@@ -1,23 +1,24 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Sales — POS System{% endblock %}
-{% block page_title %}Sales{% endblock %}
-{% block page_subtitle %}<p class="topbar-subtitle mb-0">Sales transactions and receipts</p>{% endblock %}
+{% block title %}{{ t('sales.title') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('sales.title') }}{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0" data-i18n="sales.new_subtitle">{{ t('sales.new_subtitle') }}</p>{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div></div>
-    <a href="{{ url_for('sales.sales_new') }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-lg"></i> New Sale
+    <a href="{{ url_for('sales.sales_new') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-cart-plus"></i> <span data-i18n="sales.new">{{ t('sales.new') }}</span>
     </a>
 </div>
 
 <div class="panel-card">
     <div class="panel-header d-flex justify-content-between align-items-center">
-        <h6 class="panel-title mb-0"><i class="bi bi-receipt"></i> Sales History</h6>
-        <span class="badge bg-secondary">{{ pagination.total }} total</span>
+        <h6 class="panel-title mb-0"><i class="bi bi-receipt"></i> <span data-i18n="sales.history">{{ t('sales.history') }}</span></h6>
+        <span class="badge bg-secondary">{{ t('common.total_count', count=pagination.total) }}</span>
     </div>
     <div class="panel-body">
+        {% set placeholder = t('common.search') %}
         {% include "partials/search_form.html" %}
 
         <div class="table-responsive">
@@ -25,12 +26,12 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Date</th>
-                        <th>Customer</th>
-                        <th>Cashier</th>
-                        <th class="text-end">Total</th>
-                        <th class="text-end">Paid</th>
-                        <th class="text-end">Due</th>
+                        <th data-i18n="common.date">{{ t('common.date') }}</th>
+                        <th data-i18n="common.customer">{{ t('common.customer') }}</th>
+                        <th data-i18n="common.cashier">{{ t('common.cashier') }}</th>
+                        <th class="text-end" data-i18n="common.total">{{ t('common.total') }}</th>
+                        <th class="text-end" data-i18n="common.paid">{{ t('common.paid') }}</th>
+                        <th class="text-end" data-i18n="common.due">{{ t('common.due') }}</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -40,7 +41,7 @@
                     {% set due = sale_service.get_sale_balance_due(sale) %}
                     <tr>
                         <td>{{ sale.id }}</td>
-                        <td>{{ sale.sale_date.strftime('%b %d, %Y %I:%M %p') if sale.sale_date else '—' }}</td>
+                        <td>{{ format_date_locale(sale.sale_date, include_time=True) if sale.sale_date else '—' }}</td>
                         <td>{{ sale.customer.name if sale.customer else '—' }}</td>
                         <td>{{ sale.user.full_name if sale.user else '—' }}</td>
                         <td class="text-end">{{ format_currency(sale.total_amount) }}</td>
@@ -53,12 +54,14 @@
                             {% endif %}
                         </td>
                         <td class="text-end">
-                            <a href="{{ url_for('sales.view', sale_id=sale.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+                            <a href="{{ url_for('sales.view', sale_id=sale.id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-eye"></i> <span data-i18n="common.view">{{ t('common.view') }}</span>
+                            </a>
                         </td>
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">No sales found.</td>
+                        <td colspan="8" class="text-center text-muted py-4" data-i18n="sales.no_sales">{{ t('sales.no_sales') }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

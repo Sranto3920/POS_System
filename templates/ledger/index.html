@@ -1,8 +1,8 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Customer Ledger — POS System{% endblock %}
-{% block page_title %}Customer Ledger{% endblock %}
-{% block page_subtitle %}<p class="topbar-subtitle mb-0">Account balances, debits, and credits</p>{% endblock %}
+{% block title %}{{ t('ledger.title') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('ledger.title') }}{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0" data-i18n="ledger.index_subtitle">{{ t('ledger.index_subtitle') }}</p>{% endblock %}
 
 {% block content %}
 <div class="row g-3 mb-4">
@@ -11,10 +11,12 @@
     <div class="col-md-4 col-lg-3">
         <div class="panel-card h-100">
             <div class="panel-body">
-                <div class="text-muted small">Outstanding</div>
+                <div class="text-muted small" data-i18n="ledger.outstanding">{{ t('ledger.outstanding') }}</div>
                 <div class="fw-semibold">{{ item.customer.name }}</div>
                 <div class="fs-5 fw-bold text-danger mt-1">{{ format_currency(item.balance) }}</div>
-                <a href="{{ url_for('ledger.customer', customer_id=item.customer.id) }}" class="btn btn-outline-primary btn-sm mt-2">View Ledger</a>
+                <a href="{{ url_for('ledger.customer', customer_id=item.customer.id) }}" class="btn btn-outline-primary btn-sm mt-2">
+                    <span data-i18n="ledger.view">{{ t('ledger.view') }}</span>
+                </a>
             </div>
         </div>
     </div>
@@ -24,27 +26,27 @@
 
 <div class="panel-card mb-4">
     <div class="panel-header">
-        <h6 class="panel-title mb-0"><i class="bi bi-funnel"></i> Filter Entries</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-funnel"></i> <span data-i18n="ledger.filter_entries">{{ t('ledger.filter_entries') }}</span></h6>
     </div>
     <div class="panel-body">
         <form method="GET" class="row g-2 align-items-end">
             <div class="col-md-4">
-                <label for="customer_id" class="form-label">Customer</label>
+                <label for="customer_id" class="form-label" data-i18n="common.customer">{{ t('common.customer') }}</label>
                 <select name="customer_id" id="customer_id" class="form-select">
-                    <option value="">All customers</option>
+                    <option value="" data-i18n="ledger.all_customers">{{ t('ledger.all_customers') }}</option>
                     {% for customer in customers %}
                     <option value="{{ customer.id }}" {% if selected_customer_id == customer.id %}selected{% endif %}>{{ customer.name }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-md-4">
-                <label for="q" class="form-label">Search</label>
-                <input type="text" name="q" id="q" class="form-control" value="{{ search_q or '' }}" placeholder="Customer name...">
+                <label for="q" class="form-label" data-i18n="common.search">{{ t('common.search') }}</label>
+                <input type="text" name="q" id="q" class="form-control" value="{{ search_q or '' }}" placeholder="{{ t('ledger.search_placeholder') }}" data-i18n-placeholder="ledger.search_placeholder">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-outline-primary btn-sm">Apply</button>
+                <button type="submit" class="btn btn-outline-primary btn-sm"><span data-i18n="common.apply">{{ t('common.apply') }}</span></button>
                 {% if selected_customer_id or search_q %}
-                <a href="{{ url_for('ledger.ledger_index') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                <a href="{{ url_for('ledger.ledger_index') }}" class="btn btn-outline-secondary btn-sm"><span data-i18n="common.clear">{{ t('common.clear') }}</span></a>
                 {% endif %}
             </div>
         </form>
@@ -53,26 +55,26 @@
 
 <div class="panel-card">
     <div class="panel-header d-flex justify-content-between align-items-center">
-        <h6 class="panel-title mb-0"><i class="bi bi-journal-text"></i> Ledger Entries</h6>
-        <span class="badge bg-secondary">{{ pagination.total }} total</span>
+        <h6 class="panel-title mb-0"><i class="bi bi-journal-text"></i> <span data-i18n="ledger.entries">{{ t('ledger.entries') }}</span></h6>
+        <span class="badge bg-secondary" data-i18n="common.total_count">{{ t('common.total_count', count=pagination.total) }}</span>
     </div>
     <div class="table-responsive">
         <table class="table table-hover dashboard-table mb-0">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Customer</th>
-                    <th>Sale</th>
-                    <th class="text-end">Debit</th>
-                    <th class="text-end">Credit</th>
-                    <th class="text-end">Balance</th>
-                    <th>Remarks</th>
+                    <th data-i18n="common.date">{{ t('common.date') }}</th>
+                    <th data-i18n="common.customer">{{ t('common.customer') }}</th>
+                    <th data-i18n="common.sale">{{ t('common.sale') }}</th>
+                    <th class="text-end" data-i18n="ledger.debit">{{ t('ledger.debit') }}</th>
+                    <th class="text-end" data-i18n="ledger.credit">{{ t('ledger.credit') }}</th>
+                    <th class="text-end" data-i18n="ledger.balance_col">{{ t('ledger.balance_col') }}</th>
+                    <th data-i18n="common.remarks">{{ t('common.remarks') }}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for entry in entries %}
                 <tr>
-                    <td>{{ entry.transaction_date.strftime('%b %d, %Y') if entry.transaction_date else '—' }}</td>
+                    <td>{{ format_date_locale(entry.transaction_date) if entry.transaction_date else '—' }}</td>
                     <td>
                         <a href="{{ url_for('ledger.customer', customer_id=entry.customer_id) }}">{{ entry.customer.name if entry.customer else '—' }}</a>
                     </td>
@@ -90,7 +92,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-4">No ledger entries found.</td>
+                    <td colspan="7" class="text-center text-muted py-4" data-i18n="ledger.no_entries">{{ t('ledger.no_entries') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

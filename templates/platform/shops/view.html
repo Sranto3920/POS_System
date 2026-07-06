@@ -60,7 +60,25 @@
                     <dd class="col-sm-7">{{ admin.full_name }}</dd>
 
                     <dt class="col-sm-5">Email</dt>
-                    <dd class="col-sm-7">{{ admin.email }}</dd>
+                    <dd class="col-sm-7"><code>{{ admin.email }}</code></dd>
+
+                    <dt class="col-sm-5">Login Password</dt>
+                    <dd class="col-sm-7">
+                        {% if admin.shop_login_password %}
+                            <span class="credential-password" data-password="{{ admin.shop_login_password }}">
+                                <code class="password-mask">••••••••</code>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-1 btn-toggle-password" title="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-copy-password" title="Copy password"
+                                    data-copy="{{ admin.shop_login_password }}">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        {% else %}
+                            <span class="text-muted small">Not recorded — shop owner must change password once</span>
+                        {% endif %}
+                    </dd>
 
                     <dt class="col-sm-5">Role</dt>
                     <dd class="col-sm-7"><span class="badge bg-primary">{{ admin.role_label }}</span></dd>
@@ -86,6 +104,11 @@
                     <a href="{{ url_for('platform.edit_shop', shop_id=shop.id) }}" class="btn btn-outline-primary">
                         <i class="bi bi-pencil"></i> Edit Shop
                     </a>
+                    {% if admin %}
+                    <a href="{{ url_for('platform.reset_shop_admin_password', shop_id=shop.id) }}" class="btn btn-outline-warning">
+                        <i class="bi bi-key"></i> Reset Login Password
+                    </a>
+                    {% endif %}
                     <form action="{{ url_for('platform.toggle_shop_status', shop_id=shop.id) }}" method="POST">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit" class="btn btn-outline-{{ 'warning' if shop.is_active else 'success' }} w-100">
@@ -102,4 +125,35 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.btn-toggle-password').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var wrap = btn.closest('dd, td').querySelector('.credential-password');
+        var code = wrap.querySelector('.password-mask');
+        var hidden = code.textContent.indexOf('•') >= 0;
+        if (hidden) {
+            code.textContent = wrap.dataset.password;
+            btn.querySelector('i').className = 'bi bi-eye-slash';
+        } else {
+            code.textContent = '••••••••';
+            btn.querySelector('i').className = 'bi bi-eye';
+        }
+    });
+});
+
+document.querySelectorAll('.btn-copy-password').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var value = btn.dataset.copy || '';
+        if (!value) return;
+        navigator.clipboard.writeText(value).then(function () {
+            var icon = btn.querySelector('i');
+            icon.className = 'bi bi-check2';
+            setTimeout(function () { icon.className = 'bi bi-clipboard'; }, 1500);
+        });
+    });
+});
+</script>
 {% endblock %}

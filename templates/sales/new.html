@@ -1,13 +1,13 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}New Sale — POS System{% endblock %}
-{% block page_title %}New Sale{% endblock %}
-{% block page_subtitle %}<p class="topbar-subtitle mb-0">Process a customer sale</p>{% endblock %}
+{% block title %}{{ t('sales.new') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('sales.new') }}{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0" data-i18n="sales.new_subtitle">{{ t('sales.new_subtitle') }}</p>{% endblock %}
 
 {% block content %}
 <div class="panel-card">
     <div class="panel-header">
-        <h6 class="panel-title mb-0"><i class="bi bi-receipt"></i> Sale Details</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-receipt"></i> <span data-i18n="sales.details">{{ t('sales.details') }}</span></h6>
     </div>
     <div class="panel-body">
         <form method="POST" id="sale-form">
@@ -15,69 +15,69 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-md-5">
-                    <label for="customer_id" class="form-label">Customer <span class="text-danger">*</span></label>
-                    <select name="customer_id" id="customer_id" class="form-select" required>
-                        <option value="">Select customer...</option>
+                    <label for="customer_id" class="form-label"><span data-i18n="common.customer">{{ t('common.customer') }}</span> <span class="text-danger">*</span></label>
+                    <select name="customer_id" id="customer_id" class="form-select form-select-lg" required>
+                        <option value="">{{ t('sales.select_customer') }}</option>
                         {% for customer in customers %}
                         <option value="{{ customer.id }}" {% if customer.id == walkin_customer_id %}selected{% endif %}>{{ customer.name }}</option>
                         {% endfor %}
                     </select>
-                    <div class="form-text" id="customer-due-hint">Select a registered customer to allow due payments.</div>
+                    <div class="form-text" id="customer-due-hint" data-i18n="sales.walkin_hint">{{ t('sales.walkin_hint') }}</div>
                 </div>
                 <div class="col-md-3">
-                    <label for="payment_method" class="form-label">Payment Method <span class="text-danger">*</span></label>
-                    <select name="payment_method" id="payment_method" class="form-select" required>
+                    <label for="payment_method" class="form-label"><span data-i18n="sales.payment_method">{{ t('sales.payment_method') }}</span> <span class="text-danger">*</span></label>
+                    <select name="payment_method" id="payment_method" class="form-select form-select-lg" required>
                         {% for method in payment_methods %}
-                        <option value="{{ method }}" {% if method == 'Cash' %}selected{% endif %}>{{ method }}</option>
+                        <option value="{{ method }}" {% if method == 'Cash' %}selected{% endif %}>{{ translate_payment_method(method) }}</option>
                         {% endfor %}
                     </select>
                 </div>
             </div>
 
             <div class="mb-4 position-relative">
-                <label for="product-search" class="form-label">Search Product</label>
-                <div class="input-group">
+                <label for="product-search" class="form-label" data-i18n="sales.search_product">{{ t('sales.search_product') }}</label>
+                <div class="input-group input-group-lg">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" id="product-search" class="form-control" placeholder="Search by name, barcode, or SKU..." autocomplete="off">
+                    <input type="text" id="product-search" class="form-control" data-i18n-placeholder="sales.search_placeholder" placeholder="{{ t('sales.search_placeholder') }}" autocomplete="off">
                 </div>
                 <div id="product-search-results" class="list-group position-absolute w-100 shadow-sm d-none" style="z-index: 1050; max-height: 280px; overflow-y: auto;"></div>
             </div>
 
-            <h6 class="mb-3">Cart</h6>
+            <h6 class="mb-3" data-i18n="sales.cart">{{ t('sales.cart') }}</h6>
             <div class="table-responsive mb-3">
-                <table class="table table-sm align-middle">
+                <table class="table table-sm align-middle sale-cart-table">
                     <thead>
                         <tr>
-                            <th style="min-width: 200px;">Product</th>
-                            <th style="width: 100px;">Quantity</th>
-                            <th style="width: 130px;">Market Price</th>
-                            <th style="width: 110px;">Discount</th>
-                            <th style="width: 110px;" class="text-end">Total</th>
+                            <th style="min-width: 200px;" data-i18n="common.product">{{ t('common.product') }}</th>
+                            <th style="width: 100px;" data-i18n="common.quantity">{{ t('common.quantity') }}</th>
+                            <th style="width: 130px;" data-i18n="sales.market_price">{{ t('sales.market_price') }}</th>
+                            <th style="width: 110px;" data-i18n="common.discount">{{ t('common.discount') }}</th>
+                            <th style="width: 110px;" class="text-end" data-i18n="sales.line_total">{{ t('sales.line_total') }}</th>
                             <th style="width: 60px;"></th>
                         </tr>
                     </thead>
                     <tbody id="line-items-body"></tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="4" class="text-end">Grand Total</th>
+                            <th colspan="4" class="text-end" data-i18n="sales.grand_total">{{ t('sales.grand_total') }}</th>
                             <th class="text-end" id="sale-total">৳0.00</th>
                             <th></th>
                         </tr>
                         <tr>
-                            <th colspan="4" class="text-end">Paid Amount</th>
+                            <th colspan="4" class="text-end" data-i18n="sales.paid_amount">{{ t('sales.paid_amount') }}</th>
                             <th class="text-end">
                                 <input type="number" name="paid_amount" id="paid_amount" class="form-control form-control-sm text-end" min="0" step="0.01" value="0">
                             </th>
                             <th></th>
                         </tr>
                         <tr>
-                            <th colspan="4" class="text-end">Due Amount</th>
+                            <th colspan="4" class="text-end" data-i18n="sales.due_amount">{{ t('sales.due_amount') }}</th>
                             <th class="text-end" id="due-amount">৳0.00</th>
                             <th></th>
                         </tr>
                         <tr>
-                            <th colspan="4" class="text-end">Payment Status</th>
-                            <th class="text-end"><span id="payment-status" class="badge bg-success">Paid</span></th>
+                            <th colspan="4" class="text-end" data-i18n="sales.payment_status">{{ t('sales.payment_status') }}</th>
+                            <th class="text-end"><span id="payment-status" class="badge bg-success" data-i18n="status.paid">{{ t('status.paid') }}</span></th>
                             <th></th>
                         </tr>
                     </tfoot>
@@ -85,12 +85,16 @@
             </div>
 
             <div id="empty-cart-message" class="alert alert-light border mb-4">
-                <i class="bi bi-info-circle"></i> Search and select products to add them to the cart.
+                <i class="bi bi-info-circle"></i> <span data-i18n="sales.empty_cart">{{ t('sales.empty_cart') }}</span>
             </div>
 
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary" id="complete-sale-btn" disabled>Complete Sale</button>
-                <a href="{{ url_for('sales.sales_index') }}" class="btn btn-outline-secondary">Cancel</a>
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-primary btn-lg" id="complete-sale-btn" disabled>
+                    <i class="bi bi-cart-check"></i> <span data-i18n="sales.complete_sale">{{ t('sales.complete_sale') }}</span>
+                </button>
+                <a href="{{ url_for('sales.sales_index') }}" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-x-lg"></i> <span data-i18n="common.cancel">{{ t('common.cancel') }}</span>
+                </a>
             </div>
         </form>
     </div>
@@ -114,7 +118,7 @@
         </td>
         <td class="text-end line-subtotal">—</td>
         <td>
-            <button type="button" class="btn btn-outline-danger btn-sm remove-line" title="Remove line">
+            <button type="button" class="btn btn-outline-danger btn-sm remove-line" title="Remove">
                 <i class="bi bi-trash"></i>
             </button>
         </td>

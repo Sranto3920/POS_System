@@ -1,11 +1,13 @@
 {% extends "layouts/auth.html" %}
 
-{% block title %}Not Found — POS System{% endblock %}
+{% block title %}{{ t('error.404_title') }} — {{ t('app.name') }}{% endblock %}
 
 {% block content %}
 <div class="text-center py-5">
-    <h1 class="display-6">404 — Page Not Found</h1>
-    <p class="text-muted">The page you requested does not exist.</p>
-    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+    <h1 class="display-6" data-i18n="error.404_title">{{ t('error.404_title') }}</h1>
+    <p class="text-muted" data-i18n="error.404_text">{{ t('error.404_text') }}</p>
+    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-house"></i> <span data-i18n="error.back_dashboard">{{ t('error.back_dashboard') }}</span>
+    </a>
 </div>
 {% endblock %}

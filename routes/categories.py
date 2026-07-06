@@ -3,7 +3,7 @@ from flask_login import current_user
 
 from forms.category_forms import CategoryForm
 from services.category_service import CategoryService
-from utils.decorators import shop_user_required
+from utils.decorators import manager_or_owner_required, shop_user_required
 from utils.pagination import get_page, get_search
 
 categories_bp = Blueprint("categories", __name__, url_prefix="/categories")
@@ -27,6 +27,7 @@ def categories_index():
 
 @categories_bp.route("/add", methods=["GET", "POST"])
 @shop_user_required
+@manager_or_owner_required
 def add():
     form = CategoryForm()
 
@@ -46,6 +47,7 @@ def add():
 
 @categories_bp.route("/edit/<int:category_id>", methods=["GET", "POST"])
 @shop_user_required
+@manager_or_owner_required
 def edit(category_id):
     category = CategoryService.get(current_user.shop_id, category_id)
     if category is None:
@@ -71,6 +73,7 @@ def edit(category_id):
 
 @categories_bp.route("/delete/<int:category_id>", methods=["POST"])
 @shop_user_required
+@manager_or_owner_required
 def delete(category_id):
     category = CategoryService.get(current_user.shop_id, category_id)
     if category is None:

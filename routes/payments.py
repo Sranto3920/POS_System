@@ -6,6 +6,7 @@ from flask_login import current_user
 from models.payment import PAYMENT_METHODS
 from services.payment_service import PaymentService
 from utils.decorators import role_required, shop_user_required
+from utils.i18n import t
 from utils.pagination import PER_PAGE_DEFAULT, get_page, get_search
 from utils.roles import Role
 
@@ -47,7 +48,7 @@ def record():
         try:
             paid_amount = Decimal(paid_amount_raw)
         except (InvalidOperation, TypeError):
-            flash("Enter a valid payment amount.", "danger")
+            flash(t("msg.invalid_amount"), "danger")
             return render_template(
                 "payments/record.html",
                 unpaid_sales=unpaid_sales,
@@ -55,7 +56,7 @@ def record():
             )
 
         if not sale_id:
-            flash("Please select a sale.", "danger")
+            flash(t("msg.select_sale"), "danger")
             return render_template(
                 "payments/record.html",
                 unpaid_sales=unpaid_sales,
@@ -64,9 +65,14 @@ def record():
 
         try:
             payment = service.record_payment(
-                sale_id, payment_method, paid_amount, remarks
+                sale_id,
+                payment_method,
+                paid_amount,
+                remarks,
+                user_id=current_user.id,
+                due_collection=True,
             )
-            flash(f"Payment #{payment.id} recorded successfully.", "success")
+            flash(t("msg.payment_recorded", id=payment.id), "success")
             return redirect(url_for("payments.payments_index"))
         except ValueError as exc:
             flash(str(exc), "danger")
@@ -96,7 +102,7 @@ def collect_due():
         try:
             paid_amount = Decimal(paid_amount_raw)
         except (InvalidOperation, TypeError):
-            flash("Enter a valid payment amount.", "danger")
+            flash(t("msg.invalid_amount"), "danger")
             return render_template(
                 "payments/collect_due.html",
                 customers_with_due=customers_with_due,
@@ -105,7 +111,7 @@ def collect_due():
             )
 
         if not sale_id:
-            flash("Please select an invoice.", "danger")
+            flash(t("msg.select_invoice"), "danger")
             return render_template(
                 "payments/collect_due.html",
                 customers_with_due=customers_with_due,
@@ -115,9 +121,14 @@ def collect_due():
 
         try:
             payment = service.record_payment(
-                sale_id, payment_method, paid_amount, remarks
+                sale_id,
+                payment_method,
+                paid_amount,
+                remarks,
+                user_id=current_user.id,
+                due_collection=True,
             )
-            flash(f"Due payment #{payment.id} collected successfully.", "success")
+            flash(t("msg.due_payment_collected", id=payment.id), "success")
             return redirect(url_for("payments.collect_due"))
         except ValueError as exc:
             flash(str(exc), "danger")

@@ -1,155 +1,348 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Dashboard — POS System{% endblock %}
+{% block title %}{{ t('dashboard.title') }} — {{ t('app.name') }}{% endblock %}
 
-{% block page_title %}Dashboard{% endblock %}
+{% block page_title %}{{ t('dashboard.title') }}{% endblock %}
 {% block page_subtitle %}
 <p class="topbar-subtitle mb-0">
-    Welcome back, {{ user.full_name }}
+    {{ format_date_locale(now(), include_time=False) }}
     {% if current_shop %} · <span class="text-primary">{{ current_shop.shop_name }}</span>{% endif %}
 </p>
 {% endblock %}
 
 {% block content %}
 
-{# Row 1 — inventory & people counts #}
-<div class="row g-3 g-xl-4 mb-4">
-    <div class="col-sm-6 col-xl-3">
-        <div class="stat-card stat-card-primary">
-            <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
-            <div>
-                <div class="stat-value">{{ stats.total_products }}</div>
-                <div class="stat-label">Total Products</div>
-            </div>
-        </div>
+{# ── PRIMARY ACTION: New Sale ── #}
+<a href="{{ url_for('sales.sales_new') }}" class="btn-hero-sale w-100 mb-4" id="btn-new-sale" accesskey="s">
+    <i class="bi bi-cart-check"></i>
+    <span data-i18n="dashboard.new_sale">{{ t('dashboard.new_sale') }}</span>
+    <kbd class="hero-kbd" data-i18n="dashboard.shortcut_new_sale">{{ t('dashboard.shortcut_new_sale') }}</kbd>
+</a>
+
+{# ── SECONDARY QUICK ACTIONS ── #}
+<div class="row g-2 g-md-3 mb-4">
+    <div class="col-6 {% if is_cashier %}col-md-6{% else %}col-md-3{% endif %}">
+        <a href="{{ url_for('payments.collect_due') }}" class="btn-quick-secondary w-100">
+            <i class="bi bi-cash-coin"></i>
+            <span data-i18n="dashboard.collect_due">{{ t('dashboard.collect_due') }}</span>
+        </a>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="stat-card stat-card-info">
-            <div class="stat-icon"><i class="bi bi-folder2"></i></div>
-            <div>
-                <div class="stat-value">{{ stats.total_categories }}</div>
-                <div class="stat-label">Total Categories</div>
-            </div>
-        </div>
+    {% if not is_cashier %}
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('products.add') }}" class="btn-quick-secondary w-100">
+            <i class="bi bi-box-seam"></i>
+            <span data-i18n="dashboard.add_product">{{ t('dashboard.add_product') }}</span>
+        </a>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="stat-card stat-card-success">
-            <div class="stat-icon"><i class="bi bi-people"></i></div>
-            <div>
-                <div class="stat-value">{{ stats.total_customers }}</div>
-                <div class="stat-label">Total Customers</div>
-            </div>
-        </div>
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('purchases.new') }}" class="btn-quick-secondary w-100">
+            <i class="bi bi-truck"></i>
+            <span data-i18n="dashboard.new_purchase">{{ t('dashboard.new_purchase') }}</span>
+        </a>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="stat-card stat-card-warning">
-            <div class="stat-icon"><i class="bi bi-truck"></i></div>
-            <div>
-                <div class="stat-value">{{ stats.total_suppliers }}</div>
-                <div class="stat-label">Total Suppliers</div>
-            </div>
-        </div>
+    <div class="col-6 col-md-3">
+        <a href="{{ url_for('customers.add') }}" class="btn-quick-secondary w-100">
+            <i class="bi bi-person-plus"></i>
+            <span data-i18n="dashboard.add_customer">{{ t('dashboard.add_customer') }}</span>
+        </a>
     </div>
+    {% else %}
+    <div class="col-6 col-md-6">
+        <a href="{{ url_for('products.products_index') }}" class="btn-quick-secondary w-100">
+            <i class="bi bi-box-seam"></i>
+            <span data-i18n="nav.products">{{ t('nav.products') }}</span>
+        </a>
+    </div>
+    {% endif %}
 </div>
 
-{# Row 2 — sales & stock metrics #}
-<div class="row g-3 g-xl-4 mb-4">
-    <div class="col-sm-6 col-xl-4">
-        <div class="stat-card stat-card-revenue">
-            <div class="stat-icon"><i class="bi bi-cash-coin"></i></div>
-            <div>
-                <div class="stat-value">{{ format_currency(stats.today_sales_amount) }}</div>
-                <div class="stat-label">Today's Sales ({{ stats.today_sales_count }} orders)</div>
+{# ── TOP PRIORITY: Today's Money ── #}
+<div class="row g-3 mb-4">
+    <div class="col-md-6 {% if is_cashier %}col-xl-6{% else %}col-xl-3{% endif %}">
+        <div class="money-card money-card-green h-100">
+            <div class="money-card-label" data-i18n="dashboard.today_cash_received">{{ t('dashboard.today_cash_received') }}</div>
+            <div class="money-card-value">{{ format_currency(cash.total_received) }}</div>
+            <div class="money-card-breakdown">
+                <span><i class="bi bi-cart-check"></i> <span data-i18n="dashboard.new_sales_cash">{{ t('dashboard.new_sales_cash') }}</span> {{ format_currency(cash.new_sales_cash) }}</span>
+                <span><i class="bi bi-cash-coin"></i> <span data-i18n="dashboard.due_collected_cash">{{ t('dashboard.due_collected_cash') }}</span> {{ format_currency(cash.due_collected_cash) }}</span>
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-4">
-        <div class="stat-card stat-card-dark">
-            <div class="stat-icon"><i class="bi bi-calendar-month"></i></div>
-            <div>
-                <div class="stat-value">{{ format_currency(stats.monthly_revenue) }}</div>
-                <div class="stat-label">Monthly Revenue</div>
+    {% if not is_cashier %}
+    <div class="col-md-6 col-xl-3">
+        <div class="money-card money-card-blue h-100">
+            <div class="money-card-label" data-i18n="dashboard.expected_cash">{{ t('dashboard.expected_cash') }}</div>
+            <div class="money-card-value">{{ format_currency(cash.expected_cash) }}</div>
+            <div class="money-card-hint text-white-50 small mt-1">
+                <span data-i18n="dashboard.opening_cash">{{ t('dashboard.opening_cash') }}</span> {{ format_currency(cash.opening_cash) }}
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-4">
-        <div class="stat-card stat-card-danger">
-            <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
-            <div>
-                <div class="stat-value">{{ stats.low_stock_count }}</div>
-                <div class="stat-label">Low Stock Products</div>
+    {% endif %}
+    <div class="col-md-6 {% if is_cashier %}col-xl-6{% else %}col-xl-3{% endif %}">
+        <a href="{{ url_for('payments.collect_due') }}" class="text-decoration-none d-block h-100">
+            <div class="money-card money-card-orange h-100">
+                <div class="money-card-label" data-i18n="dashboard.customer_due">{{ t('dashboard.customer_due') }}</div>
+                <div class="money-card-value">{{ format_currency(total_due) }}</div>
+                <div class="money-card-hint text-white-50 small mt-1">
+                    <i class="bi bi-arrow-right-circle"></i> <span data-i18n="dashboard.collect_due">{{ t('dashboard.collect_due') }}</span>
+                </div>
             </div>
+        </a>
+    </div>
+    {% if not is_cashier %}
+    <div class="col-md-6 col-xl-3">
+        <div class="money-card money-card-status h-100 {% if cash.cash_status == 'ok' %}status-ok{% elif cash.cash_status == 'shortage' %}status-shortage{% elif cash.cash_status == 'extra' %}status-extra{% else %}status-unknown{% endif %}">
+            {% if cash.cash_status == 'ok' %}
+            <div class="money-card-label"><i class="bi bi-check-circle-fill"></i> <span data-i18n="dashboard.cash_ok">{{ t('dashboard.cash_ok') }}</span></div>
+            <div class="money-card-value text-success" data-i18n="dashboard.perfect">{{ t('dashboard.perfect') }}</div>
+            {% elif cash.cash_status == 'shortage' %}
+            <div class="money-card-label"><i class="bi bi-exclamation-triangle-fill"></i> <span data-i18n="dashboard.cash_shortage">{{ t('dashboard.cash_shortage') }}</span></div>
+            <div class="money-card-value text-danger">{{ format_currency(cash.difference) }}</div>
+            {% elif cash.cash_status == 'extra' %}
+            <div class="money-card-label"><i class="bi bi-check-circle-fill"></i> <span data-i18n="dashboard.cash_extra">{{ t('dashboard.cash_extra') }}</span></div>
+            <div class="money-card-value text-success">+{{ format_currency(cash.difference) }}</div>
+            {% else %}
+            <div class="money-card-label" data-i18n="dashboard.difference">{{ t('dashboard.difference') }}</div>
+            <div class="money-card-value text-muted">—</div>
+            <div class="money-card-hint small text-muted" data-i18n="dashboard.enter_actual_cash">{{ t('dashboard.enter_actual_cash') }}</div>
+            {% endif %}
+            {% if cash.difference is not none and cash.cash_status not in ('ok', 'unknown') %}
+            <div class="money-card-hint small mt-1" data-i18n="dashboard.difference">{{ t('dashboard.difference') }}: {{ format_currency(cash.difference) }}</div>
+            {% endif %}
         </div>
     </div>
+    {% endif %}
 </div>
 
-{# Quick Actions #}
-<div class="panel-card mb-4">
+{# ── TODAY'S CASH SUMMARY + RECONCILIATION ── #}
+{% if is_cashier %}
+<div class="panel-card mb-4" id="todays-cash">
     <div class="panel-header">
-        <h6 class="panel-title mb-0"><i class="bi bi-lightning-charge"></i> Quick Actions</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-wallet2"></i> <span data-i18n="dashboard.todays_cash_summary">{{ t('dashboard.todays_cash_summary') }}</span></h6>
     </div>
     <div class="panel-body">
-        <div class="row g-2 g-md-3">
-            <div class="col-6 col-md-3">
-                <a href="{{ url_for('products.add') }}" class="quick-action-btn w-100">
-                    <i class="bi bi-plus-circle"></i> Add Product
-                </a>
+        <div class="row g-3 mb-3">
+            <div class="col-6">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.today_cash_received">{{ t('dashboard.today_cash_received') }}</div>
+                    <div class="cash-line-value text-success fs-4">{{ format_currency(cash.total_received) }}</div>
+                </div>
             </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ url_for('sales.sales_new') }}" class="quick-action-btn w-100">
-                    <i class="bi bi-cart-check"></i> New Sale
-                </a>
+            <div class="col-6">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.new_sales_cash">{{ t('dashboard.new_sales_cash') }}</div>
+                    <div class="cash-line-value">{{ format_currency(cash.new_sales_cash) }}</div>
+                </div>
             </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ url_for('purchases.new') }}" class="quick-action-btn w-100">
-                    <i class="bi bi-bag-plus"></i> New Purchase
-                </a>
+            <div class="col-6">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.due_collected_cash">{{ t('dashboard.due_collected_cash') }}</div>
+                    <div class="cash-line-value">{{ format_currency(cash.due_collected_cash) }}</div>
+                </div>
             </div>
-            <div class="col-6 col-md-3">
-                <a href="{{ url_for('customers.add') }}" class="quick-action-btn w-100">
-                    <i class="bi bi-person-plus"></i> Add Customer
-                </a>
+            <div class="col-6">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.expenses">{{ t('dashboard.expenses') }}</div>
+                    <div class="cash-line-value text-danger">-{{ format_currency(cash.expenses) }}</div>
+                </div>
             </div>
         </div>
+
+        <hr class="my-3">
+        <form method="POST" class="row g-3 align-items-end">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="expense">
+            <div class="col-md-4">
+                <label class="form-label" data-i18n="dashboard.expense_amount">{{ t('dashboard.expense_amount') }}</label>
+                <input type="number" name="expense_amount" class="form-control form-control-lg" min="0.01" step="0.01" required>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label" data-i18n="dashboard.expense_description">{{ t('dashboard.expense_description') }}</label>
+                <input type="text" name="expense_description" class="form-control form-control-lg"
+                       placeholder="{{ t('dashboard.expense_reason_placeholder') }}" required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-danger btn-lg w-100">
+                    <i class="bi bi-dash-circle"></i> <span data-i18n="dashboard.add_expense">{{ t('dashboard.add_expense') }}</span>
+                </button>
+            </div>
+        </form>
+
+        {% if today_expenses %}
+        <div class="table-responsive mt-3">
+            <table class="table table-sm dashboard-table mb-0">
+                <thead>
+                    <tr>
+                        <th data-i18n="dashboard.expense_description">{{ t('dashboard.expense_description') }}</th>
+                        <th class="text-end" data-i18n="common.amount">{{ t('common.amount') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in today_expenses %}
+                    <tr>
+                        <td>{{ expense.description }}</td>
+                        <td class="text-end text-danger">-{{ format_currency(expense.amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
     </div>
 </div>
+{% else %}
+<div class="panel-card mb-4" id="todays-cash">
+    <div class="panel-header">
+        <h6 class="panel-title mb-0"><i class="bi bi-wallet2"></i> <span data-i18n="dashboard.todays_cash_summary">{{ t('dashboard.todays_cash_summary') }}</span></h6>
+    </div>
+    <div class="panel-body">
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.opening_cash">{{ t('dashboard.opening_cash') }}</div>
+                    <div class="cash-line-value">{{ format_currency(cash.opening_cash) }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.carry_forward_cash">{{ t('dashboard.carry_forward_cash') }}</div>
+                    <div class="cash-line-value text-info">{{ format_currency(cash.carry_forward_cash) }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.new_sales_cash">{{ t('dashboard.new_sales_cash') }}</div>
+                    <div class="cash-line-value text-success">{{ format_currency(cash.new_sales_cash) }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.due_collected_cash">{{ t('dashboard.due_collected_cash') }}</div>
+                    <div class="cash-line-value text-success">{{ format_currency(cash.due_collected_cash) }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.expenses">{{ t('dashboard.expenses') }}</div>
+                    <div class="cash-line-value text-danger">-{{ format_currency(cash.expenses) }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.expected_cash">{{ t('dashboard.expected_cash') }}</div>
+                    <div class="cash-line-value text-primary fw-bold">{{ format_currency(cash.expected_cash) }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.actual_cash">{{ t('dashboard.actual_cash') }}</div>
+                    <div class="cash-line-value">{% if cash.actual_cash is not none %}{{ format_currency(cash.actual_cash) }}{% else %}—{% endif %}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <div class="cash-line">
+                    <div class="cash-line-label" data-i18n="dashboard.difference">{{ t('dashboard.difference') }}</div>
+                    <div class="cash-line-value {% if cash.cash_status == 'shortage' %}text-danger{% elif cash.cash_status in ('ok', 'extra') %}text-success{% endif %}">
+                        {% if cash.difference is not none %}{{ format_currency(cash.difference) }}{% else %}—{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
 
-{# Data tables #}
-<div class="row g-3 g-xl-4">
-    <div class="col-lg-7">
-        <div class="panel-card">
+        <form method="POST" class="row g-3 align-items-end">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="reconcile">
+            {% if is_owner %}
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label" data-i18n="dashboard.opening_cash">{{ t('dashboard.opening_cash') }}</label>
+                <input type="number" name="opening_cash" class="form-control form-control-lg" min="0" step="0.01"
+                       value="{{ cash.opening_cash }}">
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label" data-i18n="dashboard.carry_forward_cash">{{ t('dashboard.carry_forward_cash') }}</label>
+                <input type="number" name="carry_forward_cash" class="form-control form-control-lg" min="0" step="0.01"
+                       value="{{ cash.carry_forward_cash }}"
+                       title="{{ t('dashboard.carry_forward_hint') }}">
+                <div class="form-text" data-i18n="dashboard.carry_forward_hint">{{ t('dashboard.carry_forward_hint') }}</div>
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label" data-i18n="dashboard.supplier_payments">{{ t('dashboard.supplier_payments') }}</label>
+                <input type="number" name="supplier_payments" class="form-control form-control-lg" min="0" step="0.01"
+                       value="{{ cash.supplier_payments }}">
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label" data-i18n="dashboard.withdrawals">{{ t('dashboard.withdrawals') }}</label>
+                <input type="number" name="cash_withdrawals" class="form-control form-control-lg" min="0" step="0.01"
+                       value="{{ cash.withdrawals }}">
+            </div>
+            <div class="col-6 col-md-3 col-lg-2">
+                <label class="form-label fw-bold" data-i18n="dashboard.actual_cash">{{ t('dashboard.actual_cash') }}</label>
+                <input type="number" name="actual_cash" class="form-control form-control-lg border-primary" min="0" step="0.01"
+                       value="{{ cash.actual_cash if cash.actual_cash is not none else '' }}"
+                       placeholder="0">
+            </div>
+            <div class="col-md-6 col-lg-2">
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-save"></i> <span data-i18n="dashboard.save_cash">{{ t('dashboard.save_cash') }}</span>
+                </button>
+            </div>
+            {% endif %}
+        </form>
+
+        {% if is_owner %}
+        <hr class="my-4">
+        <form method="POST" class="row g-3 align-items-end">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="expense">
+            <div class="col-md-3">
+                <label class="form-label" data-i18n="dashboard.expense_amount">{{ t('dashboard.expense_amount') }}</label>
+                <input type="number" name="expense_amount" class="form-control form-control-lg" min="0.01" step="0.01" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" data-i18n="dashboard.expense_description">{{ t('dashboard.expense_description') }}</label>
+                <input type="text" name="expense_description" class="form-control form-control-lg" required>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-outline-danger btn-lg w-100">
+                    <i class="bi bi-dash-circle"></i> <span data-i18n="dashboard.add_expense">{{ t('dashboard.add_expense') }}</span>
+                </button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{# ── SECOND PRIORITY: Recent Activity ── #}
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="panel-card h-100">
             <div class="panel-header d-flex justify-content-between align-items-center">
-                <h6 class="panel-title mb-0"><i class="bi bi-receipt-cutoff"></i> Recent Sales</h6>
-                <a href="{{ url_for('sales.sales_index') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                <h6 class="panel-title mb-0"><i class="bi bi-receipt-cutoff"></i> <span data-i18n="dashboard.recent_sales">{{ t('dashboard.recent_sales') }}</span></h6>
+                <a href="{{ url_for('sales.sales_index') }}" class="btn btn-sm btn-outline-primary" data-i18n="common.view_all">{{ t('common.view_all') }}</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover dashboard-table mb-0">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Customer</th>
-                            <th>Cashier</th>
-                            <th>Date</th>
-                            <th class="text-end">Amount</th>
+                            <th data-i18n="common.customer">{{ t('common.customer') }}</th>
+                            <th data-i18n="common.date">{{ t('common.date') }}</th>
+                            <th class="text-end" data-i18n="common.amount">{{ t('common.amount') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for sale in recent_sales %}
                         <tr>
-                            <td><span class="text-muted">#{{ sale.sale_id }}</span></td>
+                            <td><a href="{{ url_for('sales.view', sale_id=sale.sale_id) }}">#{{ sale.sale_id }}</a></td>
                             <td>{{ sale.customer_name }}</td>
-                            <td>{{ sale.cashier_name or '—' }}</td>
-                            <td>{{ sale.sale_date.strftime('%b %d, %Y %I:%M %p') if sale.sale_date else '—' }}</td>
+                            <td>{{ format_date_locale(sale.sale_date, include_time=True) if sale.sale_date else '—' }}</td>
                             <td class="text-end fw-semibold">{{ format_currency(sale.total_amount) }}</td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5">
-                                <div class="empty-state py-4">
-                                    <i class="bi bi-receipt"></i>
-                                    <p class="mb-0">No sales recorded yet for your shop.</p>
-                                </div>
-                            </td>
+                            <td colspan="4" class="text-center text-muted py-4" data-i18n="dashboard.no_sales">{{ t('dashboard.no_sales') }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -158,38 +351,33 @@
         </div>
     </div>
 
-    <div class="col-lg-5">
-        <div class="panel-card">
+    <div class="col-lg-6">
+        <div class="panel-card h-100">
             <div class="panel-header d-flex justify-content-between align-items-center">
-                <h6 class="panel-title mb-0"><i class="bi bi-exclamation-circle"></i> Low Stock Products</h6>
-                <a href="{{ url_for('products.products_index', stock='low') }}" class="btn btn-sm btn-outline-danger">View All</a>
+                <h6 class="panel-title mb-0"><i class="bi bi-cash-stack"></i> <span data-i18n="dashboard.recent_due_collections">{{ t('dashboard.recent_due_collections') }}</span></h6>
+                <a href="{{ url_for('payments.collect_due') }}" class="btn btn-sm btn-outline-primary" data-i18n="common.view_all">{{ t('common.view_all') }}</a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover dashboard-table mb-0">
                     <thead>
                         <tr>
-                            <th>Product</th>
-                            <th>Category</th>
-                            <th class="text-end">Stock</th>
+                            <th data-i18n="common.customer">{{ t('common.customer') }}</th>
+                            <th data-i18n="common.cashier">{{ t('common.cashier') }}</th>
+                            <th data-i18n="common.date">{{ t('common.date') }}</th>
+                            <th class="text-end" data-i18n="common.amount">{{ t('common.amount') }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for product in low_stock_products %}
+                        {% for dp in recent_due_collections %}
                         <tr>
-                            <td>{{ product.product_name }}</td>
-                            <td>{{ product.category_name or '—' }}</td>
-                            <td class="text-end">
-                                <span class="badge bg-danger-subtle text-danger">{{ product.stock_quantity }}</span>
-                            </td>
+                            <td>{{ dp.customer.name if dp.customer else '—' }}</td>
+                            <td>{{ dp.user.full_name if dp.user else '—' }}</td>
+                            <td>{{ format_date_locale(dp.collected_at, include_time=True) }}</td>
+                            <td class="text-end fw-semibold text-success">{{ format_currency(dp.paid_amount) }}</td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3">
-                                <div class="empty-state py-4">
-                                    <i class="bi bi-check-circle"></i>
-                                    <p class="mb-0">All products are above the low-stock threshold.</p>
-                                </div>
-                            </td>
+                            <td colspan="4" class="text-center text-muted py-4" data-i18n="payments.no_due_found">{{ t('payments.no_due_found') }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -199,4 +387,143 @@
     </div>
 </div>
 
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="panel-card h-100">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <h6 class="panel-title mb-0"><i class="bi bi-exclamation-circle"></i> <span data-i18n="dashboard.low_stock_list">{{ t('dashboard.low_stock_list') }}</span></h6>
+                <a href="{{ url_for('products.products_index', stock='low') }}" class="btn btn-sm btn-outline-danger" data-i18n="common.view_all">{{ t('common.view_all') }}</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover dashboard-table mb-0">
+                    <thead>
+                        <tr>
+                            <th data-i18n="common.product">{{ t('common.product') }}</th>
+                            <th class="text-end" data-i18n="common.stock">{{ t('common.stock') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in low_stock_products %}
+                        <tr>
+                            <td>{{ product.product_name }}</td>
+                            <td class="text-end"><span class="badge bg-danger">{{ product.stock_quantity }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="2" class="text-center text-muted py-4" data-i18n="dashboard.all_stock_ok">{{ t('dashboard.all_stock_ok') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if not is_cashier %}
+    <div class="col-lg-6">
+        <div class="panel-card h-100">
+            <div class="panel-header">
+                <h6 class="panel-title mb-0"><i class="bi bi-dash-circle"></i> <span data-i18n="dashboard.todays_expenses">{{ t('dashboard.todays_expenses') }}</span></h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover dashboard-table mb-0">
+                    <thead>
+                        <tr>
+                            <th data-i18n="common.name">{{ t('common.name') }}</th>
+                            <th class="text-end" data-i18n="common.amount">{{ t('common.amount') }}</th>
+                            {% if is_owner %}<th class="text-end" style="width: 80px;"></th>{% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in today_expenses %}
+                        <tr>
+                            <td>{{ expense.description }}</td>
+                            <td class="text-end text-danger">-{{ format_currency(expense.amount) }}</td>
+                            {% if is_owner %}
+                            <td class="text-end">
+                                <form action="{{ url_for('dashboard.dashboard') }}" method="POST" class="d-inline"
+                                      onsubmit="return confirm('{{ t('common.confirm_delete') }}');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="action" value="delete_expense">
+                                    <input type="hidden" name="expense_id" value="{{ expense.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ t('common.delete') }}">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="{{ 3 if is_owner else 2 }}" class="text-center text-muted py-4" data-i18n="common.no_data">{{ t('common.no_data') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{# ── THIRD PRIORITY: Compact Business Stats ── #}
+{% if not is_cashier %}
+<div class="panel-card mb-2">
+    <div class="panel-header">
+        <h6 class="panel-title mb-0 text-muted"><i class="bi bi-bar-chart"></i> <span data-i18n="dashboard.business_stats">{{ t('dashboard.business_stats') }}</span></h6>
+    </div>
+    <div class="panel-body py-3">
+        <div class="row g-2">
+            <div class="col-4 col-md-2">
+                <div class="stat-compact">
+                    <div class="stat-compact-value">{{ stats.total_products }}</div>
+                    <div class="stat-compact-label" data-i18n="dashboard.total_products">{{ t('dashboard.total_products') }}</div>
+                </div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="stat-compact">
+                    <div class="stat-compact-value">{{ stats.total_customers }}</div>
+                    <div class="stat-compact-label" data-i18n="dashboard.total_customers">{{ t('dashboard.total_customers') }}</div>
+                </div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="stat-compact">
+                    <div class="stat-compact-value">{{ stats.total_suppliers }}</div>
+                    <div class="stat-compact-label" data-i18n="dashboard.total_suppliers">{{ t('dashboard.total_suppliers') }}</div>
+                </div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="stat-compact">
+                    <div class="stat-compact-value">{{ stats.total_categories }}</div>
+                    <div class="stat-compact-label" data-i18n="dashboard.total_categories">{{ t('dashboard.total_categories') }}</div>
+                </div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="stat-compact">
+                    <div class="stat-compact-value">{{ format_currency(stats.monthly_revenue) }}</div>
+                    <div class="stat-compact-label" data-i18n="dashboard.monthly_sales">{{ t('dashboard.monthly_sales') }}</div>
+                </div>
+            </div>
+            <div class="col-4 col-md-2">
+                <div class="stat-compact">
+                    <div class="stat-compact-value">{{ stats.today_sales_count }}</div>
+                    <div class="stat-compact-label" data-i18n="dashboard.today_orders">{{ t('dashboard.today_orders', count=stats.today_sales_count) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'F2') {
+        e.preventDefault();
+        window.location.href = {{ url_for('sales.sales_new') | tojson }};
+    }
+});
+</script>
 {% endblock %}

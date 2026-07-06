@@ -1,11 +1,13 @@
 {% extends "layouts/auth.html" %}
 
-{% block title %}Forbidden — POS System{% endblock %}
+{% block title %}{{ t('error.403_title') }} — {{ t('app.name') }}{% endblock %}
 
 {% block content %}
 <div class="text-center py-5">
-    <h1 class="display-6">403 — Access Denied</h1>
-    <p class="text-muted">You do not have permission to access this page.</p>
-    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary">Back to Dashboard</a>
+    <h1 class="display-6" data-i18n="error.403_title">{{ t('error.403_title') }}</h1>
+    <p class="text-muted" data-i18n="error.403_text">{{ t('error.403_text') }}</p>
+    <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-house"></i> <span data-i18n="error.back_dashboard">{{ t('error.back_dashboard') }}</span>
+    </a>
 </div>
 {% endblock %}

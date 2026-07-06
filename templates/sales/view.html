@@ -1,16 +1,26 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Sale #{{ sale.id }} — POS System{% endblock %}
-{% block page_title %}Sale #{{ sale.id }}{% endblock %}
+{% block title %}{{ t('common.invoice') }} #{{ sale.id }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('common.invoice') }} #{{ sale.id }}{% endblock %}
 {% block page_subtitle %}
-<p class="topbar-subtitle mb-0">{{ sale.sale_date.strftime('%b %d, %Y %I:%M %p') if sale.sale_date else '' }}</p>
+<p class="topbar-subtitle mb-0">{{ format_date_locale(sale.sale_date, include_time=True) if sale.sale_date else '' }}</p>
 {% endblock %}
 
 {% block content %}
-<div class="row g-3 mb-3">
+
+<div class="post-sale-bar no-print">
+    <button type="button" class="btn btn-outline-dark btn-lg" onclick="window.print()">
+        <i class="bi bi-printer"></i> <span data-i18n="common.print_receipt">{{ t('common.print_receipt') }}</span>
+    </button>
+    <a href="{{ url_for('sales.sales_new') }}" class="btn btn-success btn-lg">
+        <i class="bi bi-cart-plus"></i> <span data-i18n="dashboard.new_sale">{{ t('dashboard.new_sale') }}</span>
+    </a>
+</div>
+
+<div class="row g-3 mb-3 no-print">
     <div class="col-md-3">
         <div class="panel-card h-100">
-            <div class="panel-header"><h6 class="panel-title mb-0">Customer</h6></div>
+            <div class="panel-header"><h6 class="panel-title mb-0" data-i18n="common.customer">{{ t('common.customer') }}</h6></div>
             <div class="panel-body">
                 <div class="fw-semibold">{{ sale.customer.name if sale.customer else '—' }}</div>
                 {% if sale.customer and sale.customer.phone %}
@@ -21,7 +31,7 @@
     </div>
     <div class="col-md-3">
         <div class="panel-card h-100">
-            <div class="panel-header"><h6 class="panel-title mb-0">Cashier</h6></div>
+            <div class="panel-header"><h6 class="panel-title mb-0" data-i18n="common.cashier">{{ t('common.cashier') }}</h6></div>
             <div class="panel-body">
                 <div class="fw-semibold">{{ sale.user.full_name if sale.user else '—' }}</div>
             </div>
@@ -29,7 +39,7 @@
     </div>
     <div class="col-md-2">
         <div class="panel-card h-100">
-            <div class="panel-header"><h6 class="panel-title mb-0">Total</h6></div>
+            <div class="panel-header"><h6 class="panel-title mb-0" data-i18n="common.total">{{ t('common.total') }}</h6></div>
             <div class="panel-body">
                 <div class="fs-5 fw-bold text-primary">{{ format_currency(sale.total_amount) }}</div>
             </div>
@@ -37,7 +47,7 @@
     </div>
     <div class="col-md-2">
         <div class="panel-card h-100">
-            <div class="panel-header"><h6 class="panel-title mb-0">Paid</h6></div>
+            <div class="panel-header"><h6 class="panel-title mb-0" data-i18n="common.paid">{{ t('common.paid') }}</h6></div>
             <div class="panel-body">
                 <div class="fs-5 fw-bold text-success">{{ format_currency(paid_total) }}</div>
             </div>
@@ -45,14 +55,14 @@
     </div>
     <div class="col-md-2">
         <div class="panel-card h-100">
-            <div class="panel-header"><h6 class="panel-title mb-0">Status</h6></div>
+            <div class="panel-header"><h6 class="panel-title mb-0" data-i18n="common.status">{{ t('common.status') }}</h6></div>
             <div class="panel-body">
                 {% if sale.payment_status == 'Paid' %}
-                <span class="badge bg-success">Paid</span>
+                <span class="badge bg-success" data-i18n="status.paid">{{ t('status.paid') }}</span>
                 {% elif sale.payment_status == 'Partially Paid' %}
-                <span class="badge bg-warning text-dark">Partially Paid</span>
+                <span class="badge bg-warning text-dark" data-i18n="status.partially_paid">{{ t('status.partially_paid') }}</span>
                 {% else %}
-                <span class="badge bg-danger">Due</span>
+                <span class="badge bg-danger" data-i18n="status.due">{{ t('status.due') }}</span>
                 {% endif %}
             </div>
         </div>
@@ -63,17 +73,17 @@
     <div class="col-lg-7">
         <div class="panel-card">
             <div class="panel-header">
-                <h6 class="panel-title mb-0"><i class="bi bi-list-ul"></i> Line Items</h6>
+                <h6 class="panel-title mb-0"><i class="bi bi-list-ul"></i> <span data-i18n="sales.line_items">{{ t('sales.line_items') }}</span></h6>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover dashboard-table mb-0">
                     <thead>
                         <tr>
-                            <th>Product</th>
-                            <th class="text-end">Qty</th>
-                            <th class="text-end">Price</th>
-                            <th class="text-end">Discount</th>
-                            <th class="text-end">Subtotal</th>
+                            <th data-i18n="common.product">{{ t('common.product') }}</th>
+                            <th class="text-end" data-i18n="common.qty">{{ t('common.qty') }}</th>
+                            <th class="text-end" data-i18n="common.price">{{ t('common.price') }}</th>
+                            <th class="text-end" data-i18n="common.discount">{{ t('common.discount') }}</th>
+                            <th class="text-end" data-i18n="common.subtotal">{{ t('common.subtotal') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,13 +97,13 @@
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No line items.</td>
+                            <td colspan="5" class="text-center text-muted py-4" data-i18n="common.no_line_items">{{ t('common.no_line_items') }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="4" class="text-end">Total</th>
+                            <th colspan="4" class="text-end" data-i18n="common.total">{{ t('common.total') }}</th>
                             <th class="text-end">{{ format_currency(sale.total_amount) }}</th>
                         </tr>
                     </tfoot>
@@ -105,30 +115,32 @@
     <div class="col-lg-5">
         <div class="panel-card">
             <div class="panel-header d-flex justify-content-between align-items-center">
-                <h6 class="panel-title mb-0"><i class="bi bi-credit-card"></i> Payments</h6>
+                <h6 class="panel-title mb-0"><i class="bi bi-credit-card"></i> <span data-i18n="common.payments">{{ t('common.payments') }}</span></h6>
                 {% if balance_due > 0 %}
-                <a href="{{ url_for('payments.record') }}?sale_id={{ sale.id }}" class="btn btn-outline-primary btn-sm">Record Payment</a>
+                <a href="{{ url_for('payments.record') }}?sale_id={{ sale.id }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-cash-coin"></i> <span data-i18n="common.record_payment">{{ t('common.record_payment') }}</span>
+                </a>
                 {% endif %}
             </div>
             <div class="table-responsive">
                 <table class="table table-hover dashboard-table mb-0">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Method</th>
-                            <th class="text-end">Amount</th>
+                            <th data-i18n="common.date">{{ t('common.date') }}</th>
+                            <th data-i18n="common.method">{{ t('common.method') }}</th>
+                            <th class="text-end" data-i18n="common.amount">{{ t('common.amount') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for payment in payments %}
                         <tr>
-                            <td>{{ payment.payment_date.strftime('%b %d, %Y') if payment.payment_date else '—' }}</td>
-                            <td>{{ payment.payment_method }}</td>
+                            <td>{{ format_date_locale(payment.payment_date) if payment.payment_date else '—' }}</td>
+                            <td>{{ translate_payment_method(payment.payment_method) }}</td>
                             <td class="text-end">{{ format_currency(payment.paid_amount) }}</td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="3" class="text-center text-muted py-4">No payments recorded.</td>
+                            <td colspan="3" class="text-center text-muted py-4" data-i18n="common.no_payments">{{ t('common.no_payments') }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -138,12 +150,52 @@
     </div>
 </div>
 
-<div class="mt-3 d-flex gap-2">
-    <a href="{{ url_for('sales.sales_index') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> Back to Sales
+<div class="receipt-print d-none">
+    <div class="text-center mb-3">
+        <h4>{{ current_shop.shop_name if current_shop else t('receipt.store') }}</h4>
+        <div>{{ t('receipt.invoice_no') }} {{ sale.id }}</div>
+        <div>{{ t('receipt.date') }}: {{ format_date_locale(sale.sale_date, include_time=True) if sale.sale_date else '' }}</div>
+    </div>
+    <p><strong data-i18n="receipt.customer">{{ t('receipt.customer') }}</strong>: {{ sale.customer.name if sale.customer else '—' }}</p>
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th data-i18n="common.product">{{ t('common.product') }}</th>
+                <th class="text-end" data-i18n="receipt.qty">{{ t('receipt.qty') }}</th>
+                <th class="text-end" data-i18n="receipt.price">{{ t('receipt.price') }}</th>
+                <th class="text-end" data-i18n="receipt.subtotal">{{ t('receipt.subtotal') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detail in sale.details %}
+            <tr>
+                <td>{{ detail.product.name if detail.product else '—' }}</td>
+                <td class="text-end">{{ detail.quantity }}</td>
+                <td class="text-end">{{ format_currency(detail.selling_price) }}</td>
+                <td class="text-end">{{ format_currency(detail.subtotal) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr><th colspan="3" class="text-end" data-i18n="receipt.total">{{ t('receipt.total') }}</th><th class="text-end">{{ format_currency(sale.total_amount) }}</th></tr>
+            <tr><th colspan="3" class="text-end" data-i18n="receipt.paid">{{ t('receipt.paid') }}</th><th class="text-end">{{ format_currency(paid_total) }}</th></tr>
+            {% if balance_due > 0 %}
+            <tr><th colspan="3" class="text-end" data-i18n="receipt.due">{{ t('receipt.due') }}</th><th class="text-end">{{ format_currency(balance_due) }}</th></tr>
+            {% endif %}
+        </tfoot>
+    </table>
+    <p class="text-center mt-3" data-i18n="receipt.thank_you">{{ t('receipt.thank_you') }}</p>
+</div>
+
+<div class="mt-3 d-flex gap-2 flex-wrap no-print">
+    <a href="{{ url_for('sales.sales_index') }}" class="btn btn-outline-secondary btn-lg">
+        <i class="bi bi-arrow-left"></i> <span data-i18n="sales.back_to_sales">{{ t('sales.back_to_sales') }}</span>
     </a>
-    <a href="{{ url_for('sales.sales_new') }}" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-lg"></i> New Sale
+    <a href="{{ url_for('sales.sales_new') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-cart-plus"></i> <span data-i18n="sales.new">{{ t('sales.new') }}</span>
     </a>
+    <button type="button" class="btn btn-outline-dark btn-lg" onclick="window.print()">
+        <i class="bi bi-printer"></i> <span data-i18n="common.print_receipt">{{ t('common.print_receipt') }}</span>
+    </button>
 </div>
 {% endblock %}

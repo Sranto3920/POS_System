@@ -1,14 +1,14 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}{{ customer.name }} Ledger — POS System{% endblock %}
+{% block title %}{{ customer.name }} — {{ t('ledger.title') }} — {{ t('app.name') }}{% endblock %}
 {% block page_title %}{{ customer.name }}{% endblock %}
-{% block page_subtitle %}<p class="topbar-subtitle mb-0">Customer ledger account</p>{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0" data-i18n="ledger.customer_subtitle">{{ t('ledger.customer_subtitle') }}</p>{% endblock %}
 
 {% block content %}
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="panel-card h-100">
-            <div class="panel-header"><h6 class="panel-title mb-0">Contact</h6></div>
+            <div class="panel-header"><h6 class="panel-title mb-0" data-i18n="customers.contact">{{ t('customers.contact') }}</h6></div>
             <div class="panel-body">
                 {% if customer.phone %}<div>{{ customer.phone }}</div>{% endif %}
                 {% if customer.email %}<div class="text-muted small">{{ customer.email }}</div>{% endif %}
@@ -18,13 +18,13 @@
     </div>
     <div class="col-md-4">
         <div class="panel-card h-100">
-            <div class="panel-header"><h6 class="panel-title mb-0">Current Balance</h6></div>
+            <div class="panel-header"><h6 class="panel-title mb-0" data-i18n="ledger.balance">{{ t('ledger.balance') }}</h6></div>
             <div class="panel-body">
                 <div class="fs-3 fw-bold {% if balance > 0 %}text-danger{% else %}text-success{% endif %}">{{ format_currency(balance) }}</div>
                 {% if balance > 0 %}
-                <div class="text-muted small">Amount owed by customer</div>
+                <div class="text-muted small" data-i18n="ledger.amount_owed">{{ t('ledger.amount_owed') }}</div>
                 {% else %}
-                <div class="text-muted small">No outstanding balance</div>
+                <div class="text-muted small" data-i18n="ledger.no_balance">{{ t('ledger.no_balance') }}</div>
                 {% endif %}
             </div>
         </div>
@@ -33,25 +33,25 @@
 
 <div class="panel-card">
     <div class="panel-header d-flex justify-content-between align-items-center">
-        <h6 class="panel-title mb-0"><i class="bi bi-journal-text"></i> Transaction History</h6>
-        <span class="badge bg-secondary">{{ pagination.total }} entries</span>
+        <h6 class="panel-title mb-0"><i class="bi bi-journal-text"></i> <span data-i18n="ledger.transaction_history">{{ t('ledger.transaction_history') }}</span></h6>
+        <span class="badge bg-secondary">{{ t('ledger.entries_count', count=pagination.total) }}</span>
     </div>
     <div class="table-responsive">
         <table class="table table-hover dashboard-table mb-0">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Sale</th>
-                    <th class="text-end">Debit</th>
-                    <th class="text-end">Credit</th>
-                    <th class="text-end">Balance</th>
-                    <th>Remarks</th>
+                    <th data-i18n="common.date">{{ t('common.date') }}</th>
+                    <th data-i18n="common.sale">{{ t('common.sale') }}</th>
+                    <th class="text-end" data-i18n="ledger.debit">{{ t('ledger.debit') }}</th>
+                    <th class="text-end" data-i18n="ledger.credit">{{ t('ledger.credit') }}</th>
+                    <th class="text-end" data-i18n="ledger.balance_col">{{ t('ledger.balance_col') }}</th>
+                    <th data-i18n="common.remarks">{{ t('common.remarks') }}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for entry in entries %}
                 <tr>
-                    <td>{{ entry.transaction_date.strftime('%b %d, %Y %I:%M %p') if entry.transaction_date else '—' }}</td>
+                    <td>{{ format_date_locale(entry.transaction_date, include_time=True) if entry.transaction_date else '—' }}</td>
                     <td>
                         {% if entry.sale_id %}
                         <a href="{{ url_for('sales.view', sale_id=entry.sale_id) }}">#{{ entry.sale_id }}</a>
@@ -66,7 +66,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-4">No ledger entries for this customer.</td>
+                    <td colspan="6" class="text-center text-muted py-4" data-i18n="ledger.no_customer_entries">{{ t('ledger.no_customer_entries') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -80,7 +80,7 @@
 
 <div class="mt-3">
     <a href="{{ url_for('ledger.ledger_index') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> Back to Ledger
+        <i class="bi bi-arrow-left"></i> <span data-i18n="ledger.back_to">{{ t('ledger.back_to') }}</span>
     </a>
 </div>
 {% endblock %}

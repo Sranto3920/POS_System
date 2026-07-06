@@ -1,34 +1,36 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Products — POS System{% endblock %}
-{% block page_title %}Products{% endblock %}
+{% block title %}{{ t('products.title') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('products.title') }}{% endblock %}
 {% block page_subtitle %}
-<p class="topbar-subtitle mb-0">Manage product inventory, pricing, and stock levels</p>
+<p class="topbar-subtitle mb-0" data-i18n="products.subtitle">{{ t('products.subtitle') }}</p>
 {% endblock %}
 
 {% block content %}
 
 <div class="panel-card">
     <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <h6 class="panel-title mb-0"><i class="bi bi-box-seam"></i> Products</h6>
-        <a href="{{ url_for('products.add') }}" class="btn btn-sm btn-primary">
-            <i class="bi bi-plus-lg"></i> Add Product
+        <h6 class="panel-title mb-0"><i class="bi bi-box-seam"></i> <span data-i18n="products.title">{{ t('products.title') }}</span></h6>
+        {% if can_manage_products %}
+        <a href="{{ url_for('products.add') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-box-seam"></i> <span data-i18n="products.add">{{ t('products.add') }}</span>
         </a>
+        {% endif %}
     </div>
     <div class="panel-body">
         <form method="GET" class="row g-2 align-items-end mb-3">
             <div class="col-md-4 col-lg-3">
-                <label class="form-label small text-muted mb-1">Search</label>
+                <label class="form-label small text-muted mb-1" data-i18n="common.search">{{ t('common.search') }}</label>
                 <div class="input-group">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" name="q" class="form-control" placeholder="Search products..."
+                    <input type="text" name="q" class="form-control" placeholder="{{ t('products.search_placeholder') }}"
                            value="{{ search_q or '' }}">
                 </div>
             </div>
             <div class="col-md-3 col-lg-2">
-                <label class="form-label small text-muted mb-1">Category</label>
+                <label class="form-label small text-muted mb-1" data-i18n="common.category">{{ t('common.category') }}</label>
                 <select name="category_id" class="form-select">
-                    <option value="">All Categories</option>
+                    <option value="">{{ t('common.all_categories') }}</option>
                     {% for cat in categories %}
                     <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>
                         {{ cat.name }}
@@ -37,18 +39,22 @@
                 </select>
             </div>
             <div class="col-md-3 col-lg-2">
-                <label class="form-label small text-muted mb-1">Stock</label>
+                <label class="form-label small text-muted mb-1" data-i18n="common.stock">{{ t('common.stock') }}</label>
                 <select name="stock" class="form-select">
-                    <option value="all" {% if stock_filter == 'all' %}selected{% endif %}>All Stock</option>
-                    <option value="in_stock" {% if stock_filter == 'in_stock' %}selected{% endif %}>In Stock</option>
-                    <option value="low" {% if stock_filter == 'low' %}selected{% endif %}>Low Stock</option>
-                    <option value="out" {% if stock_filter == 'out' %}selected{% endif %}>Out of Stock</option>
+                    <option value="all" {% if stock_filter == 'all' %}selected{% endif %}>{{ t('common.all_stock') }}</option>
+                    <option value="in_stock" {% if stock_filter == 'in_stock' %}selected{% endif %} data-i18n="status.in_stock">{{ t('status.in_stock') }}</option>
+                    <option value="low" {% if stock_filter == 'low' %}selected{% endif %} data-i18n="status.low_stock">{{ t('status.low_stock') }}</option>
+                    <option value="out" {% if stock_filter == 'out' %}selected{% endif %} data-i18n="status.out_of_stock">{{ t('status.out_of_stock') }}</option>
                 </select>
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-outline-primary btn-sm">Filter</button>
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-funnel"></i> <span data-i18n="common.filter">{{ t('common.filter') }}</span>
+                </button>
                 {% if search_q or category_id or stock_filter != 'all' %}
-                <a href="{{ url_for('products.products_index') }}" class="btn btn-outline-secondary btn-sm">Clear</a>
+                <a href="{{ url_for('products.products_index') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-x-lg"></i> <span data-i18n="common.clear">{{ t('common.clear') }}</span>
+                </a>
                 {% endif %}
             </div>
         </form>
@@ -57,15 +63,15 @@
             <table class="table table-hover dashboard-table mb-0">
                 <thead>
                     <tr>
-                        <th>Product</th>
-                        <th>Category</th>
-                        <th>Supplier</th>
-                        <th class="text-end">Cost</th>
-                        <th class="text-end">Price</th>
-                        <th class="text-end">Stock</th>
-                        <th>Status</th>
-                        <th>Expiry</th>
-                        <th class="text-end" style="width: 140px;">Actions</th>
+                        <th data-i18n="common.product">{{ t('common.product') }}</th>
+                        <th data-i18n="common.category">{{ t('common.category') }}</th>
+                        {% if can_manage_products %}<th data-i18n="common.supplier">{{ t('common.supplier') }}</th>{% endif %}
+                        {% if can_manage_products %}<th class="text-end" data-i18n="common.cost">{{ t('common.cost') }}</th>{% endif %}
+                        <th class="text-end" data-i18n="common.price">{{ t('common.price') }}</th>
+                        <th class="text-end" data-i18n="common.stock">{{ t('common.stock') }}</th>
+                        <th data-i18n="common.status">{{ t('common.status') }}</th>
+                        {% if can_manage_products %}<th data-i18n="common.expiry">{{ t('common.expiry') }}</th>{% endif %}
+                        {% if can_manage_products %}<th class="text-end" style="width: 140px;" data-i18n="common.actions">{{ t('common.actions') }}</th>{% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -73,44 +79,46 @@
                     <tr>
                         <td class="fw-semibold">{{ product.name }}</td>
                         <td>{{ product.category.name if product.category else '—' }}</td>
-                        <td>{{ product.supplier.name if product.supplier else '—' }}</td>
-                        <td class="text-end">{{ format_currency(product.cost_price) }}</td>
+                        {% if can_manage_products %}<td>{{ product.supplier.name if product.supplier else '—' }}</td>{% endif %}
+                        {% if can_manage_products %}<td class="text-end">{{ format_currency(product.cost_price) }}</td>{% endif %}
                         <td class="text-end">{{ format_currency(product.default_selling_price) }}</td>
                         <td class="text-end">{{ product.stock_quantity }}</td>
                         <td>
-                            <span class="badge bg-{{ product.stock_badge_class }}">
-                                {{ product.stock_status }}
+                            <span class="badge bg-{{ product.stock_badge_class }}" data-i18n="status.{{ product.stock_status.lower().replace(' ', '_') }}">
+                                {{ translate_stock_status(product.stock_status) }}
                             </span>
                         </td>
+                        {% if can_manage_products %}
                         <td>
                             {% if product.expiry_date %}
-                                {{ product.expiry_date.strftime('%b %d, %Y') }}
+                                {{ format_date_locale(product.expiry_date) }}
                             {% else %}
                                 <span class="text-muted">—</span>
                             {% endif %}
                         </td>
                         <td class="text-end">
                             <a href="{{ url_for('products.edit', product_id=product.id) }}"
-                               class="btn btn-sm btn-outline-primary" title="Edit">
+                               class="btn btn-sm btn-outline-primary" title="{{ t('common.edit') }}">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <form action="{{ url_for('products.delete', product_id=product.id) }}"
                                   method="POST" class="d-inline"
-                                  onsubmit="return confirm('Delete this product?');">
+                                  onsubmit="return confirm('{{ t('common.delete_confirm') }}');">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ t('common.delete') }}">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
                         </td>
+                        {% endif %}
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-4">
+                        <td colspan="{{ 9 if can_manage_products else 5 }}" class="text-center text-muted py-4">
                             {% if search_q or category_id or stock_filter != 'all' %}
-                                No products match your filters.
+                            <span data-i18n="products.no_match">{{ t('products.no_match') }}</span>
                             {% else %}
-                                No products yet. Add your first product.
+                            <span data-i18n="products.no_yet">{{ t('products.no_yet') }}</span>
                             {% endif %}
                         </td>
                     </tr>

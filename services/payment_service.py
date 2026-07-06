@@ -28,7 +28,15 @@ class PaymentService:
 
         return query.paginate(page=page, per_page=per_page, error_out=False)
 
-    def record_payment(self, sale_id, payment_method, paid_amount, remarks=None):
+    def record_payment(
+        self,
+        sale_id,
+        payment_method,
+        paid_amount,
+        remarks=None,
+        user_id=None,
+        due_collection=False,
+    ):
         if payment_method not in PAYMENT_METHODS:
             raise ValueError("Invalid payment method.")
 
@@ -46,13 +54,32 @@ class PaymentService:
                 f"Payment exceeds balance due ({balance_due:.2f})."
             )
 
+        is_due_collection = due_collection or self._sale_service.get_sale_paid_total(sale) > 0
+
         try:
             payment = Payment(
                 sale_id=sale.id,
+                shop_id=self.shop_id,
+                user_id=user_id,
                 payment_method=payment_method,
                 paid_amount=paid_amount,
+                payment_type="due_collection" if is_due_collection else "sale",
             )
             db.session.add(payment)
+
+            if is_due_collection and user_id:
+                from models.due_payment import DuePayment
+
+                due_payment = DuePayment(
+                    shop_id=self.shop_id,
+                    sale_id=sale.id,
+                    customer_id=sale.customer_id,
+                    user_id=user_id,
+                    payment_method=payment_method,
+                    paid_amount=paid_amount,
+                    remarks=remarks,
+                )
+                db.session.add(due_payment)
 
             if balance_due > 0:
                 previous_balance = self._get_customer_balance(

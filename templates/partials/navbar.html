@@ -4,12 +4,13 @@
             <i class="bi bi-list fs-4"></i>
         </button>
         <div>
-            <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <h1 class="topbar-title">{% block page_title %}{{ t('nav.dashboard') }}{% endblock %}</h1>
             {% block page_subtitle %}{% endblock %}
         </div>
     </div>
 
     <div class="topbar-right">
+        {% include "partials/language_toggle.html" %}
         {% if current_shop %}
         <span class="topbar-shop-badge d-none d-lg-inline">
             <i class="bi bi-shop"></i> {{ current_shop.shop_name }}
@@ -17,13 +18,15 @@
         {% endif %}
         <span class="topbar-date d-none d-md-inline">
             <i class="bi bi-calendar3"></i>
-            {{ now().strftime('%A, %b %d, %Y') if now is defined else '' }}
+            {% if now is defined %}
+            {{ format_weekday_locale(now()) }}, {{ format_date_locale(now()) }}
+            {% endif %}
         </span>
         <div class="topbar-user">
             <div class="topbar-avatar">{{ current_user.full_name[:1] }}</div>
             <div class="d-none d-sm-block">
                 <div class="topbar-name">{{ current_user.full_name }}</div>
-                <div class="topbar-role">{{ current_user.role_label }}</div>
+                <div class="topbar-role">{{ t('role.' + current_user.normalized_role) }}</div>
             </div>
         </div>
     </div>

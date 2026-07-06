@@ -1,11 +1,11 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}{{ title }} — POS System{% endblock %}
+{% block title %}{{ title }} — {{ t('app.name') }}{% endblock %}
 {% block page_title %}{{ title }}{% endblock %}
 {% block page_subtitle %}
 <p class="topbar-subtitle mb-0">
     <a href="{{ url_for('reports.reports_index') }}" class="text-decoration-none">
-        <i class="bi bi-arrow-left"></i> Back to Reports
+        <i class="bi bi-arrow-left"></i> <span data-i18n="reports.back_to">{{ t('reports.back_to') }}</span>
     </a>
 </p>
 {% endblock %}
@@ -18,7 +18,7 @@
         {% if export_type %}
         <a href="{{ url_for('exports.exports_download', export_type=export_type) }}"
            class="btn btn-sm btn-outline-success">
-            <i class="bi bi-file-earmark-excel"></i> Export Excel
+            <i class="bi bi-file-earmark-excel"></i> <span data-i18n="reports.export_excel">{{ t('reports.export_excel') }}</span>
         </a>
         {% endif %}
     </div>
@@ -26,44 +26,44 @@
         {% if filter_type == 'date' %}
         <form method="GET" class="row g-2 align-items-end mb-3">
             <div class="col-auto">
-                <label class="form-label mb-0" for="date">Date</label>
+                <label class="form-label mb-0" for="date" data-i18n="reports.date">{{ t('reports.date') }}</label>
                 <input type="date" class="form-control" id="date" name="date"
                        value="{{ filter_value }}">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Apply</button>
+                <button type="submit" class="btn btn-primary"><span data-i18n="reports.apply">{{ t('reports.apply') }}</span></button>
             </div>
         </form>
         {% elif filter_type == 'month' %}
         <form method="GET" class="row g-2 align-items-end mb-3">
             <div class="col-auto">
-                <label class="form-label mb-0" for="year">Year</label>
+                <label class="form-label mb-0" for="year" data-i18n="reports.year">{{ t('reports.year') }}</label>
                 <input type="number" class="form-control" id="year" name="year"
                        value="{{ filter_year }}" min="2000" max="2100">
             </div>
             <div class="col-auto">
-                <label class="form-label mb-0" for="month">Month</label>
+                <label class="form-label mb-0" for="month" data-i18n="reports.month">{{ t('reports.month') }}</label>
                 <input type="number" class="form-control" id="month" name="month"
                        value="{{ filter_month }}" min="1" max="12">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Apply</button>
+                <button type="submit" class="btn btn-primary"><span data-i18n="reports.apply">{{ t('reports.apply') }}</span></button>
             </div>
         </form>
         {% elif filter_type == 'range' %}
         <form method="GET" class="row g-2 align-items-end mb-3">
             <div class="col-auto">
-                <label class="form-label mb-0" for="date_from">From</label>
+                <label class="form-label mb-0" for="date_from" data-i18n="common.from">{{ t('common.from') }}</label>
                 <input type="date" class="form-control" id="date_from" name="date_from"
                        value="{{ filter_date_from }}">
             </div>
             <div class="col-auto">
-                <label class="form-label mb-0" for="date_to">To</label>
+                <label class="form-label mb-0" for="date_to" data-i18n="common.to">{{ t('common.to') }}</label>
                 <input type="date" class="form-control" id="date_to" name="date_to"
                        value="{{ filter_date_to }}">
             </div>
             <div class="col-auto">
-                <button type="submit" class="btn btn-primary">Apply</button>
+                <button type="submit" class="btn btn-primary"><span data-i18n="reports.apply">{{ t('reports.apply') }}</span></button>
             </div>
         </form>
         {% endif %}
@@ -92,27 +92,27 @@
 {% if daily_breakdown %}
 <div class="panel-card mb-4">
     <div class="panel-header">
-        <h6 class="panel-title mb-0"><i class="bi bi-bar-chart"></i> Daily Breakdown</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-bar-chart"></i> <span data-i18n="reports.daily_breakdown">{{ t('reports.daily_breakdown') }}</span></h6>
     </div>
     <div class="table-responsive">
         <table class="table table-hover dashboard-table mb-0">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Sales Count</th>
-                    <th class="text-end">Day Total</th>
+                    <th data-i18n="common.date">{{ t('common.date') }}</th>
+                    <th data-i18n="reports.sales_count">{{ t('reports.sales_count') }}</th>
+                    <th class="text-end" data-i18n="reports.day_total">{{ t('reports.day_total') }}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for day in daily_breakdown %}
                 <tr>
-                    <td>{{ day.sale_day.strftime('%b %d, %Y') if day.sale_day else '—' }}</td>
+                    <td>{{ format_date_locale(day.sale_day) if day.sale_day else '—' }}</td>
                     <td>{{ day.sale_count }}</td>
                     <td class="text-end">{{ format_currency(day.day_total) }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="3" class="text-center text-muted py-4">No daily data for this period.</td>
+                    <td colspan="3" class="text-center text-muted py-4" data-i18n="reports.no_daily_data">{{ t('reports.no_daily_data') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -123,7 +123,7 @@
 
 <div class="panel-card">
     <div class="panel-header">
-        <h6 class="panel-title mb-0"><i class="bi bi-table"></i> Details</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-table"></i> <span data-i18n="reports.details">{{ t('reports.details') }}</span></h6>
     </div>
     <div class="table-responsive">
         <table class="table table-hover dashboard-table mb-0">
@@ -145,9 +145,9 @@
                         {% if key in ['total_amount', 'total_spent', 'total_purchased', 'cost_price', 'default_selling_price', 'stock_value'] %}
                             {{ format_currency(value) }}
                         {% elif key in ['sale_date', 'purchase_date'] and value %}
-                            {{ value.strftime('%b %d, %Y %I:%M %p') }}
+                            {{ format_date_locale(value, include_time=True) }}
                         {% elif key == 'expiry_date' and value %}
-                            {{ value.strftime('%b %d, %Y') }}
+                            {{ format_date_locale(value) }}
                         {% else %}
                             {{ value if value is not none else '—' }}
                         {% endif %}
@@ -156,8 +156,8 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="{{ columns|length }}" class="text-center text-muted py-4">
-                        No records found for this report.
+                    <td colspan="{{ columns|length }}" class="text-center text-muted py-4" data-i18n="reports.no_records">
+                        {{ t('reports.no_records') }}
                     </td>
                 </tr>
                 {% endfor %}

@@ -1,11 +1,13 @@
 {% extends "layouts/auth.html" %}
 
-{% block title %}Unauthorized — POS System{% endblock %}
+{% block title %}{{ t('error.401_title') }} — {{ t('app.name') }}{% endblock %}
 
 {% block content %}
 <div class="text-center py-5">
-    <h1 class="display-6">401 — Unauthorized</h1>
-    <p class="text-muted">You must be logged in to view this page.</p>
-    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Go to Login</a>
+    <h1 class="display-6" data-i18n="error.401_title">{{ t('error.401_title') }}</h1>
+    <p class="text-muted" data-i18n="error.401_text">{{ t('error.401_text') }}</p>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-box-arrow-in-right"></i> <span data-i18n="auth.login">{{ t('auth.login') }}</span>
+    </a>
 </div>
 {% endblock %}

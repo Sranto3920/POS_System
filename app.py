@@ -16,10 +16,12 @@ from routes.categories import categories_bp
 from routes.customers import customers_bp
 from routes.dashboard import dashboard_bp
 from routes.exports import exports_bp
+from routes.language import language_bp
 from routes.ledger import ledger_bp
 from routes.manager import manager_bp
 from routes.payments import payments_bp
 from routes.platform import platform_bp
+from routes.owner_auth import owner_auth_bp
 from routes.platform_auth import platform_auth_bp
 from routes.pos import pos_bp
 from routes.products import products_bp
@@ -42,6 +44,7 @@ def create_app():
     csrf.init_app(app)
 
     app.register_blueprint(platform_auth_bp)
+    app.register_blueprint(owner_auth_bp)
     app.register_blueprint(platform_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -59,14 +62,51 @@ def create_app():
     app.register_blueprint(ledger_bp)
     app.register_blueprint(reports_bp)
     app.register_blueprint(exports_bp)
+    app.register_blueprint(language_bp)
 
     register_user_loader()
+    register_language_handler(app)
     register_unauthorized_handler(app)
     register_error_handlers(app)
     register_cli(app)
     register_context_processors(app)
 
     return app
+
+
+def register_language_handler(app):
+    from flask import g
+
+    from utils.i18n import get_lang, normalize_lang
+
+    @app.before_request
+    def set_request_language():
+        g.lang = get_lang()
+
+    @app.context_processor
+    def inject_language():
+        from utils.i18n import (
+            format_date_locale,
+            format_weekday_locale,
+            get_all_packs,
+            get_lang,
+            t,
+            translate_payment_method,
+            translate_payment_status,
+            translate_stock_status,
+        )
+
+        lang = get_lang()
+        return {
+            "t": t,
+            "current_lang": lang,
+            "i18n_packs": get_all_packs(),
+            "format_date_locale": format_date_locale,
+            "format_weekday_locale": format_weekday_locale,
+            "translate_payment_method": translate_payment_method,
+            "translate_payment_status": translate_payment_status,
+            "translate_stock_status": translate_stock_status,
+        }
 
 
 def register_context_processors(app):
@@ -84,6 +124,7 @@ def register_context_processors(app):
             "format_currency": format_currency,
             "now": datetime.now,
             "current_shop": current_shop,
+            "shop_display_name": app.config.get("SHOP_DISPLAY_NAME", "POS System"),
         }
 
 
@@ -109,7 +150,7 @@ def register_unauthorized_handler(app):
     @login_manager.unauthorized_handler
     def unauthorized():
         if request.path.startswith("/platform"):
-            return redirect(url_for("platform_auth.login", next=request.url))
+            return redirect(url_for("owner_auth.login", next=request.url))
         return redirect(url_for("auth.login", next=request.url))
 
 
@@ -139,6 +180,8 @@ def ensure_schema():
     ensure_product_columns()
     ensure_sale_columns()
     ensure_sale_detail_columns()
+    ensure_payment_columns()
+    ensure_daily_cash_columns()
 
 
 def ensure_user_columns():
@@ -158,6 +201,28 @@ def ensure_user_columns():
     if "last_login" not in columns:
         db.session.execute(text("ALTER TABLE Users ADD COLUMN last_login DATETIME NULL"))
 
+    if "preferred_language" not in columns:
+        db.session.execute(
+            text(
+                "ALTER TABLE Users ADD COLUMN preferred_language VARCHAR(5) NOT NULL DEFAULT 'bn'"
+            )
+        )
+
+    if "login_password" not in columns:
+        db.session.execute(
+            text("ALTER TABLE Users ADD COLUMN login_password VARCHAR(255) NULL")
+        )
+        db.session.commit()
+
+    from models.user import User
+    from sqlalchemy import func
+    from utils.roles import Role
+
+    users_missing_password = User.query.filter(User.login_password.is_(None)).all()
+    for user in users_missing_password:
+        stored = user.password_hash or ""
+        if stored and not stored.startswith(("pbkdf2:", "scrypt:")):
+            user.login_password = stored
     db.session.commit()
 
 
@@ -172,9 +237,6 @@ def ensure_shop_columns():
         db.session.execute(
             text("ALTER TABLE Shops ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE")
         )
-        db.session.commit()
-
-
         db.session.commit()
 
 
@@ -304,6 +366,49 @@ def ensure_sale_detail_columns():
                 )
             )
             db.session.commit()
+
+
+def ensure_payment_columns():
+    inspector = inspect(db.engine)
+    if "Payments" not in inspector.get_table_names():
+        return
+
+    columns = {column["name"].lower() for column in inspector.get_columns("Payments")}
+
+    if "shop_id" not in columns:
+        db.session.execute(
+            text("ALTER TABLE Payments ADD COLUMN shop_id INT NULL")
+        )
+
+    if "user_id" not in columns:
+        db.session.execute(
+            text("ALTER TABLE Payments ADD COLUMN user_id INT NULL")
+        )
+
+    if "payment_type" not in columns:
+        db.session.execute(
+            text(
+                "ALTER TABLE Payments ADD COLUMN payment_type VARCHAR(20) NOT NULL DEFAULT 'sale'"
+            )
+        )
+
+    db.session.commit()
+
+
+def ensure_daily_cash_columns():
+    inspector = inspect(db.engine)
+    if "DailyCash" not in inspector.get_table_names():
+        return
+
+    columns = {column["name"].lower() for column in inspector.get_columns("DailyCash")}
+
+    if "carry_forward_cash" not in columns:
+        db.session.execute(
+            text(
+                "ALTER TABLE DailyCash ADD COLUMN carry_forward_cash DECIMAL(10,2) NOT NULL DEFAULT 0"
+            )
+        )
+        db.session.commit()
 
 
 def register_cli(app):

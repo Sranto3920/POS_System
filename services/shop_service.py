@@ -109,3 +109,28 @@ class ShopService:
     @staticmethod
     def count_active_shops():
         return Shop.query.filter_by(is_active=True).count()
+
+    @staticmethod
+    def reset_shop_admin_password(shop_id, password):
+        admin = ShopService.get_shop_admin(shop_id)
+        if admin is None:
+            raise ValueError("No shop admin account found for this shop.")
+        admin.set_password(password)
+        db.session.commit()
+        return admin
+
+    @staticmethod
+    def get_shop_credentials():
+        """Shop admin login details for platform owner profile."""
+        rows = []
+        for shop in ShopService.get_all_shops():
+            admin = ShopService.get_shop_admin(shop.id)
+            rows.append(
+                {
+                    "shop": shop,
+                    "admin": admin,
+                    "login_email": admin.email if admin else None,
+                    "login_password": admin.shop_login_password if admin else None,
+                }
+            )
+        return rows

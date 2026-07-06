@@ -8,6 +8,7 @@ from models.payment import PAYMENT_METHODS, Payment
 from services.product_service import ProductService
 from services.sale_service import SaleService
 from utils.decorators import role_required, shop_user_required
+from utils.i18n import t
 from utils.pagination import PER_PAGE_DEFAULT, get_page, get_search
 from utils.roles import Role
 
@@ -100,7 +101,7 @@ def sales_new():
         items = _parse_sale_items()
 
         if not customer_id:
-            flash("Please select a customer.", "danger")
+            flash(t("msg.select_customer"), "danger")
             return render_template(
                 "sales/new.html",
                 customers=customers,
@@ -109,7 +110,7 @@ def sales_new():
             )
 
         if not items:
-            flash("Add at least one product line.", "danger")
+            flash(t("msg.add_product_line"), "danger")
             return render_template(
                 "sales/new.html",
                 customers=customers,
@@ -126,7 +127,7 @@ def sales_new():
                 payment_method,
                 paid_amount,
             )
-            flash(f"Sale #{sale.id} completed successfully.", "success")
+            flash(t("msg.sale_success", id=sale.id), "success")
             return redirect(url_for("sales.view", sale_id=sale.id))
         except ValueError as exc:
             flash(str(exc), "danger")
@@ -146,7 +147,7 @@ def view(sale_id):
     service = SaleService(current_user.shop_id)
     sale = service.get_sale(sale_id)
     if sale is None:
-        flash("Sale not found.", "warning")
+        flash(t("msg.not_found"), "warning")
         return redirect(url_for("sales.sales_index"))
 
     paid_total = service.get_sale_paid_total(sale)

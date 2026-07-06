@@ -1,9 +1,9 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}User Management — POS System{% endblock %}
-{% block page_title %}User Management{% endblock %}
+{% block title %}{{ t('users.title') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('users.title') }}{% endblock %}
 {% block page_subtitle %}
-<p class="topbar-subtitle mb-0">Manage Managers and Cashiers for {{ current_shop.shop_name if current_shop else 'your shop' }}</p>
+<p class="topbar-subtitle mb-0" data-i18n="users.index_subtitle">{{ t('users.index_subtitle', shop=current_shop.shop_name if current_shop else t('app.name')) }}</p>
 {% endblock %}
 
 {% block content %}
@@ -11,26 +11,26 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div></div>
     <a href="{{ url_for('users.users_add') }}" class="btn btn-primary">
-        <i class="bi bi-person-plus"></i> Add User
+        <i class="bi bi-person-plus"></i> <span data-i18n="users.add">{{ t('users.add') }}</span>
     </a>
 </div>
 
 <div class="panel-card">
     <div class="panel-header d-flex justify-content-between align-items-center">
-        <h6 class="panel-title mb-0"><i class="bi bi-person-gear"></i> Shop Users</h6>
-        <span class="badge bg-secondary">{{ users|length }} total</span>
+        <h6 class="panel-title mb-0"><i class="bi bi-person-gear"></i> <span data-i18n="users.shop_users">{{ t('users.shop_users') }}</span></h6>
+        <span class="badge bg-secondary" data-i18n="common.total_count">{{ t('common.total_count', count=users|length) }}</span>
     </div>
     <div class="table-responsive">
         <table class="table table-hover dashboard-table mb-0">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Last Login</th>
-                    <th class="text-end">Actions</th>
+                    <th data-i18n="common.name">{{ t('common.name') }}</th>
+                    <th data-i18n="common.email">{{ t('common.email') }}</th>
+                    <th data-i18n="common.phone">{{ t('common.phone') }}</th>
+                    <th data-i18n="users.role">{{ t('users.role') }}</th>
+                    <th data-i18n="common.status">{{ t('common.status') }}</th>
+                    <th data-i18n="users.last_login">{{ t('users.last_login') }}</th>
+                    <th class="text-end" data-i18n="common.actions">{{ t('common.actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,30 +39,35 @@
                     <td>{{ u.full_name }}</td>
                     <td>{{ u.email }}</td>
                     <td>{{ u.phone or '—' }}</td>
-                    <td><span class="badge bg-primary">{{ u.role_label }}</span></td>
+                    <td><span class="badge bg-primary" data-i18n="role.{{ u.normalized_role }}">{{ t('role.' + u.normalized_role) }}</span></td>
                     <td>
                         {% if u.is_active %}
-                            <span class="badge bg-success">Active</span>
+                            <span class="badge bg-success" data-i18n="users.active">{{ t('users.active') }}</span>
                         {% else %}
-                            <span class="badge bg-danger">Inactive</span>
+                            <span class="badge bg-danger" data-i18n="users.inactive">{{ t('users.inactive') }}</span>
                         {% endif %}
                     </td>
                     <td>
                         {% if u.last_login %}
-                            {{ u.last_login.strftime('%b %d, %Y %I:%M %p') }}
+                            {{ format_date_locale(u.last_login, include_time=True) }}
                         {% else %}
-                            <span class="text-muted">Never</span>
+                            <span class="text-muted" data-i18n="users.never">{{ t('users.never') }}</span>
                         {% endif %}
                     </td>
                     <td class="text-end">
                         <div class="btn-group btn-group-sm">
-                            {% if u.id != current_user.id and u.normalized_role != 'admin' %}
+                            {% if u.id == current_user.id and u.normalized_role == 'admin' %}
+                            <a href="{{ url_for('profile.change_password') }}"
+                               class="btn btn-outline-secondary" data-i18n-title="profile.change_password" title="{{ t('profile.change_password') }}">
+                                <i class="bi bi-key"></i>
+                            </a>
+                            {% elif u.id != current_user.id and u.normalized_role != 'admin' %}
                             <a href="{{ url_for('users.users_edit', user_id=u.id) }}"
-                               class="btn btn-outline-primary" title="Edit">
+                               class="btn btn-outline-primary" data-i18n-title="common.edit" title="{{ t('common.edit') }}">
                                 <i class="bi bi-pencil"></i>
                             </a>
                             <a href="{{ url_for('users.users_reset_password', user_id=u.id) }}"
-                               class="btn btn-outline-secondary" title="Reset Password">
+                               class="btn btn-outline-secondary" data-i18n-title="users.reset_password" title="{{ t('users.reset_password') }}">
                                 <i class="bi bi-key"></i>
                             </a>
                             <form action="{{ url_for('users.users_toggle_status', user_id=u.id) }}"
@@ -70,15 +75,16 @@
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit"
                                         class="btn btn-outline-{{ 'warning' if u.is_active else 'success' }}"
-                                        title="{{ 'Deactivate' if u.is_active else 'Activate' }}">
+                                        data-i18n-title="{{ 'users.deactivate' if u.is_active else 'users.activate' }}"
+                                        title="{{ t('users.deactivate' if u.is_active else 'users.activate') }}">
                                     <i class="bi bi-{{ 'pause-circle' if u.is_active else 'play-circle' }}"></i>
                                 </button>
                             </form>
                             <form action="{{ url_for('users.users_delete', user_id=u.id) }}"
                                   method="POST" class="d-inline"
-                                  onsubmit="return confirm('Delete this user permanently?');">
+                                  onsubmit="return confirm('{{ t('users.delete_confirm') }}');">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-outline-danger" title="Delete">
+                                <button type="submit" class="btn btn-outline-danger" data-i18n-title="common.delete" title="{{ t('common.delete') }}">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
@@ -90,7 +96,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted py-4">No users found for this shop.</td>
+                    <td colspan="7" class="text-center text-muted py-4" data-i18n="users.no_users">{{ t('users.no_users') }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

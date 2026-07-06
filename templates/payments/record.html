@@ -1,18 +1,18 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Record Payment — POS System{% endblock %}
-{% block page_title %}Record Payment{% endblock %}
-{% block page_subtitle %}<p class="topbar-subtitle mb-0">Collect payment on an outstanding sale</p>{% endblock %}
+{% block title %}{{ t('payments.record') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('payments.record') }}{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0" data-i18n="payments.record_subtitle">{{ t('payments.record_subtitle') }}</p>{% endblock %}
 
 {% block content %}
 <div class="panel-card">
     <div class="panel-header">
-        <h6 class="panel-title mb-0"><i class="bi bi-credit-card"></i> Payment Details</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-credit-card"></i> <span data-i18n="payments.payment_details">{{ t('payments.payment_details') }}</span></h6>
     </div>
     <div class="panel-body">
         {% if not unpaid_sales %}
         <div class="alert alert-info mb-0">
-            <i class="bi bi-info-circle"></i> No sales with an outstanding balance.
+            <i class="bi bi-info-circle"></i> <span data-i18n="payments.no_unpaid_sales">{{ t('payments.no_unpaid_sales') }}</span>
         </div>
         {% else %}
         <form method="POST">
@@ -20,41 +20,41 @@
 
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                    <label for="sale_id" class="form-label">Sale <span class="text-danger">*</span></label>
+                    <label for="sale_id" class="form-label"><span data-i18n="payments.sale_label">{{ t('payments.sale_label') }}</span> <span class="text-danger">*</span></label>
                     <select name="sale_id" id="sale_id" class="form-select" required>
-                        <option value="">Select sale...</option>
+                        <option value="" data-i18n="payments.select_sale">{{ t('payments.select_sale') }}</option>
                         {% for item in unpaid_sales %}
                         <option value="{{ item.sale.id }}" data-balance="{{ item.balance_due }}" {% if request.args.get('sale_id', type=int) == item.sale.id %}selected{% endif %}>
-                            Sale #{{ item.sale.id }} — {{ item.sale.customer.name if item.sale.customer else 'Customer' }} — Due: {{ format_currency(item.balance_due) }}
+                            {{ t('payments.sale_label') }} #{{ item.sale.id }} — {{ item.sale.customer.name if item.sale.customer else t('common.customer') }} — {{ t('common.due') }}: {{ format_currency(item.balance_due) }}
                         </option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="payment_method" class="form-label">Payment Method <span class="text-danger">*</span></label>
+                    <label for="payment_method" class="form-label"><span data-i18n="sales.payment_method">{{ t('sales.payment_method') }}</span> <span class="text-danger">*</span></label>
                     <select name="payment_method" id="payment_method" class="form-select" required>
                         {% for method in payment_methods %}
                         {% if method != 'Credit' %}
-                        <option value="{{ method }}" {% if method == 'Cash' %}selected{% endif %}>{{ method }}</option>
+                        <option value="{{ method }}" {% if method == 'Cash' %}selected{% endif %}>{{ translate_payment_method(method) }}</option>
                         {% endif %}
                         {% endfor %}
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="paid_amount" class="form-label">Amount <span class="text-danger">*</span></label>
+                    <label for="paid_amount" class="form-label"><span data-i18n="common.amount">{{ t('common.amount') }}</span> <span class="text-danger">*</span></label>
                     <input type="number" name="paid_amount" id="paid_amount" class="form-control" min="0.01" step="0.01" required>
                     <div class="form-text" id="balance-hint"></div>
                 </div>
             </div>
 
             <div class="mb-4">
-                <label for="remarks" class="form-label">Remarks</label>
-                <textarea name="remarks" id="remarks" class="form-control" rows="2" placeholder="Optional note"></textarea>
+                <label for="remarks" class="form-label" data-i18n="common.remarks">{{ t('common.remarks') }}</label>
+                <textarea name="remarks" id="remarks" class="form-control" rows="2" placeholder="{{ t('payments.optional_note') }}" data-i18n-placeholder="payments.optional_note"></textarea>
             </div>
 
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Record Payment</button>
-                <a href="{{ url_for('payments.payments_index') }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary"><span data-i18n="payments.record">{{ t('payments.record') }}</span></button>
+                <a href="{{ url_for('payments.payments_index') }}" class="btn btn-outline-secondary"><span data-i18n="common.cancel">{{ t('common.cancel') }}</span></a>
             </div>
         </form>
         {% endif %}
@@ -68,13 +68,14 @@
     const saleSelect = document.getElementById('sale_id');
     const paidInput = document.getElementById('paid_amount');
     const balanceHint = document.getElementById('balance-hint');
+    const balanceDueLabel = {{ t('payments.balance_due_hint', amount='{amount}')|tojson }};
 
     function updateBalanceHint() {
         if (!saleSelect || !paidInput) return;
         const option = saleSelect.selectedOptions[0];
         const balance = option ? parseFloat(option.dataset.balance || '0') : 0;
         if (balance > 0) {
-            balanceHint.textContent = 'Balance due: ৳' + balance.toFixed(2);
+            balanceHint.textContent = balanceDueLabel.replace('{amount}', balance.toFixed(2));
             if (!paidInput.value) {
                 paidInput.value = balance.toFixed(2);
             }

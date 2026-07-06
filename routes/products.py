@@ -4,11 +4,15 @@ from flask_login import current_user
 from forms.product_forms import ProductForm
 from models.category import Category
 from services.product_service import ProductService
-from utils.decorators import shop_user_required
+from utils.decorators import manager_or_owner_required, shop_user_required
 from utils.pagination import get_page, get_search
 from utils.roles import Role
 
 products_bp = Blueprint("products", __name__, url_prefix="/products")
+
+
+def _can_manage_products():
+    return current_user.has_role(Role.ADMIN, Role.MANAGER)
 
 
 def _can_edit_minimum_price():
@@ -65,11 +69,13 @@ def products_index():
         stock_filter=stock_filter,
         extra_args={"category_id": category_id or "", "stock": stock_filter},
         can_edit_minimum=_can_edit_minimum_price(),
+        can_manage_products=_can_manage_products(),
     )
 
 
 @products_bp.route("/add", methods=["GET", "POST"])
 @shop_user_required
+@manager_or_owner_required
 def add():
     can_edit_minimum = _can_edit_minimum_price()
     form = ProductForm(
@@ -98,6 +104,7 @@ def add():
 
 @products_bp.route("/edit/<int:product_id>", methods=["GET", "POST"])
 @shop_user_required
+@manager_or_owner_required
 def edit(product_id):
     product = ProductService.get(current_user.shop_id, product_id)
     if product is None:
@@ -137,6 +144,7 @@ def edit(product_id):
 
 @products_bp.route("/delete/<int:product_id>", methods=["POST"])
 @shop_user_required
+@manager_or_owner_required
 def delete(product_id):
     product = ProductService.get(current_user.shop_id, product_id)
     if product is None:

@@ -1,10 +1,14 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}{{ title }} — POS System{% endblock %}
-{% block page_title %}{{ title }}{% endblock %}
+{% block title %}{% if product %}{{ t('products.edit') }}{% else %}{{ t('products.new') }}{% endif %} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{% if product %}{{ t('products.edit') }}{% else %}{{ t('products.new') }}{% endif %}{% endblock %}
 {% block page_subtitle %}
 <p class="topbar-subtitle mb-0">
-    {% if product %}Editing {{ product.name }}{% else %}Add a new product to inventory{% endif %}
+    {% if product %}
+    <span data-i18n="products.editing">{{ t('products.editing', name=product.name) }}</span>
+    {% else %}
+    <span data-i18n="products.add_subtitle">{{ t('products.add_subtitle') }}</span>
+    {% endif %}
 </p>
 {% endblock %}
 
@@ -14,15 +18,21 @@
     <div class="col-lg-9">
         <div class="panel-card">
             <div class="panel-header">
-                <h6 class="panel-title mb-0"><i class="bi bi-box-seam"></i> {{ title }}</h6>
+                <h6 class="panel-title mb-0"><i class="bi bi-box-seam"></i>
+                    {% if product %}
+                    <span data-i18n="products.edit">{{ t('products.edit') }}</span>
+                    {% else %}
+                    <span data-i18n="products.new">{{ t('products.new') }}</span>
+                    {% endif %}
+                </h6>
             </div>
             <div class="panel-body">
                 <form method="POST" novalidate>
                     {{ form.hidden_tag() }}
 
                     <div class="mb-3">
-                        {{ form.name.label(class="form-label") }}
-                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="Product name") }}
+                        <label class="form-label" for="{{ form.name.id }}" data-i18n="common.name">{{ t('common.name') }}</label>
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder=t('products.name_placeholder'), **{'data-i18n-placeholder': 'products.name_placeholder'}) }}
                         {% for error in form.name.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
                         {% endfor %}
@@ -31,8 +41,8 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                {{ form.barcode.label(class="form-label") }}
-                                {{ form.barcode(class="form-control" + (" is-invalid" if form.barcode.errors else ""), placeholder="Optional barcode") }}
+                                <label class="form-label" for="{{ form.barcode.id }}" data-i18n="common.barcode">{{ t('common.barcode') }}</label>
+                                {{ form.barcode(class="form-control" + (" is-invalid" if form.barcode.errors else ""), placeholder=t('products.barcode_optional'), **{'data-i18n-placeholder': 'products.barcode_optional'}) }}
                                 {% for error in form.barcode.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
                                 {% endfor %}
@@ -40,8 +50,8 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                {{ form.sku.label(class="form-label") }}
-                                {{ form.sku(class="form-control" + (" is-invalid" if form.sku.errors else ""), placeholder="Optional SKU") }}
+                                <label class="form-label" for="{{ form.sku.id }}" data-i18n="common.sku">{{ t('common.sku') }}</label>
+                                {{ form.sku(class="form-control" + (" is-invalid" if form.sku.errors else ""), placeholder=t('products.sku_optional'), **{'data-i18n-placeholder': 'products.sku_optional'}) }}
                                 {% for error in form.sku.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
                                 {% endfor %}
@@ -52,25 +62,27 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                {{ form.category_id.label(class="form-label") }}
+                                <label class="form-label" for="{{ form.category_id.id }}" data-i18n="common.category">{{ t('common.category') }}</label>
                                 {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
                                 {% for error in form.category_id.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
                                 {% endfor %}
                                 <div class="form-text">
-                                    <a href="{{ url_for('categories.add') }}">Add a category</a> if none exist.
+                                    <a href="{{ url_for('categories.add') }}" data-i18n="products.add_category_if_none">{{ t('products.add_category_if_none') }}</a>
+                                    <span data-i18n="products.if_none_exist">{{ t('products.if_none_exist') }}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                {{ form.supplier_id.label(class="form-label") }}
+                                <label class="form-label" for="{{ form.supplier_id.id }}" data-i18n="common.supplier">{{ t('common.supplier') }}</label>
                                 {{ form.supplier_id(class="form-select" + (" is-invalid" if form.supplier_id.errors else "")) }}
                                 {% for error in form.supplier_id.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
                                 {% endfor %}
                                 <div class="form-text">
-                                    <a href="{{ url_for('suppliers.add') }}">Add a supplier</a> if none exist.
+                                    <a href="{{ url_for('suppliers.add') }}" data-i18n="products.add_supplier_if_none">{{ t('products.add_supplier_if_none') }}</a>
+                                    <span data-i18n="products.if_none_exist">{{ t('products.if_none_exist') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -79,7 +91,7 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <div class="mb-3">
-                                {{ form.cost_price.label(class="form-label") }}
+                                <label class="form-label" for="{{ form.cost_price.id }}" data-i18n="products.cost_price">{{ t('products.cost_price') }}</label>
                                 {{ form.cost_price(class="form-control" + (" is-invalid" if form.cost_price.errors else ""), step="0.01", min="0") }}
                                 {% for error in form.cost_price.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
@@ -88,29 +100,29 @@
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                {{ form.market_price.label(class="form-label") }}
+                                <label class="form-label" for="{{ form.market_price.id }}" data-i18n="products.market_price">{{ t('products.market_price') }}</label>
                                 {{ form.market_price(class="form-control" + (" is-invalid" if form.market_price.errors else ""), step="0.01", min="0") }}
                                 {% for error in form.market_price.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
                                 {% endfor %}
-                                <div class="form-text">Suggested selling price for cashiers.</div>
+                                <div class="form-text" data-i18n="products.market_price_hint">{{ t('products.market_price_hint') }}</div>
                             </div>
                         </div>
                         {% if can_edit_minimum %}
                         <div class="col-md-4">
                             <div class="mb-3">
-                                {{ form.minimum_selling_price.label(class="form-label") }}
+                                <label class="form-label" for="{{ form.minimum_selling_price.id }}" data-i18n="products.min_price">{{ t('products.min_price') }}</label>
                                 {{ form.minimum_selling_price(class="form-control" + (" is-invalid" if form.minimum_selling_price.errors else ""), step="0.01", min="0") }}
                                 {% for error in form.minimum_selling_price.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
                                 {% endfor %}
-                                <div class="form-text">Hidden from cashiers. Enforced at checkout.</div>
+                                <div class="form-text" data-i18n="products.min_price_hint">{{ t('products.min_price_hint') }}</div>
                             </div>
                         </div>
                         {% endif %}
                         <div class="col-md-4">
                             <div class="mb-3">
-                                {{ form.stock_quantity.label(class="form-label") }}
+                                <label class="form-label" for="{{ form.stock_quantity.id }}" data-i18n="common.stock">{{ t('common.stock') }}</label>
                                 {{ form.stock_quantity(class="form-control" + (" is-invalid" if form.stock_quantity.errors else ""), min="0") }}
                                 {% for error in form.stock_quantity.errors %}
                                     <div class="invalid-feedback">{{ error }}</div>
@@ -120,7 +132,7 @@
                     </div>
 
                     <div class="mb-3">
-                        {{ form.expiry_date.label(class="form-label") }}
+                        <label class="form-label" for="{{ form.expiry_date.id }}" data-i18n="common.expiry">{{ t('common.expiry') }}</label>
                         {{ form.expiry_date(class="form-control" + (" is-invalid" if form.expiry_date.errors else ""), type="date") }}
                         {% for error in form.expiry_date.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
@@ -129,10 +141,15 @@
 
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('products.products_index') }}" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Cancel
+                            <i class="bi bi-arrow-left"></i> <span data-i18n="common.cancel">{{ t('common.cancel') }}</span>
                         </a>
                         <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg"></i> {{ submit_label }}
+                            <i class="bi bi-check-lg"></i>
+                            {% if product %}
+                            <span data-i18n="products.save_changes">{{ t('products.save_changes') }}</span>
+                            {% else %}
+                            <span data-i18n="products.create">{{ t('products.create') }}</span>
+                            {% endif %}
                         </button>
                     </div>
                 </form>

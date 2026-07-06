@@ -8,6 +8,7 @@ Shop staff cannot access these URLs.
 from flask import Blueprint, flash, redirect, render_template, url_for
 
 from forms.shop_forms import CreateShopForm, EditShopForm
+from forms.user_forms import PasswordForm
 from services.shop_service import ShopService
 from utils.decorators import platform_required
 
@@ -48,6 +49,18 @@ def create_shop():
     return render_template("platform/shops/create.html", form=form)
 
 
+@platform_bp.route("/profile")
+@platform_required
+def profile():
+    from flask_login import current_user
+
+    return render_template(
+        "platform/profile.html",
+        shop_credentials=ShopService.get_shop_credentials(),
+        platform_user=current_user,
+    )
+
+
 @platform_bp.route("/shops/<int:shop_id>")
 @platform_required
 def view_shop(shop_id):
@@ -58,6 +71,40 @@ def view_shop(shop_id):
 
     admin = ShopService.get_shop_admin(shop_id)
     return render_template("platform/shops/view.html", shop=shop, admin=admin)
+
+
+@platform_bp.route("/shops/<int:shop_id>/reset-admin-password", methods=["GET", "POST"])
+@platform_required
+def reset_shop_admin_password(shop_id):
+    shop = ShopService.get_shop(shop_id)
+    if shop is None:
+        flash("Shop not found.", "warning")
+        return redirect(url_for("platform.dashboard"))
+
+    admin = ShopService.get_shop_admin(shop_id)
+    if admin is None:
+        flash("No shop admin account found.", "warning")
+        return redirect(url_for("platform.view_shop", shop_id=shop_id))
+
+    form = PasswordForm()
+    if form.validate_on_submit():
+        try:
+            ShopService.reset_shop_admin_password(shop_id, form.password.data)
+            flash(
+                f'Login password reset for "{admin.full_name}" ({admin.email}). '
+                f"It is now visible on your Platform Profile.",
+                "success",
+            )
+            return redirect(url_for("platform.view_shop", shop_id=shop_id))
+        except ValueError as exc:
+            flash(str(exc), "danger")
+
+    return render_template(
+        "platform/shops/reset_admin_password.html",
+        form=form,
+        shop=shop,
+        admin=admin,
+    )
 
 
 @platform_bp.route("/shops/<int:shop_id>/edit", methods=["GET", "POST"])

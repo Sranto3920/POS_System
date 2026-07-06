@@ -171,6 +171,20 @@ body {
     color: #60a5fa;
 }
 
+.sidebar-link-primary {
+    font-weight: 600;
+    color: #86efac !important;
+}
+
+.sidebar-link-primary.active {
+    background: rgba(22, 163, 74, 0.35);
+    color: #fff !important;
+}
+
+.sidebar-link-primary.active i {
+    color: #bbf7d0;
+}
+
 .sidebar-link i {
     font-size: 1.05rem;
     width: 1.25rem;
@@ -476,4 +490,288 @@ body {
     .topbar {
         padding: 0 1rem;
     }
+}
+
+/* Language toggle */
+.language-toggle,
+.lang-toggle-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.5rem;
+    padding: 0.2rem;
+    background: #fff;
+}
+
+.lang-switch-btn {
+    border: none;
+    background: transparent;
+    padding: 0.35rem 0.65rem;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.lang-switch-btn.active {
+    background: var(--bs-primary, #0d6efd);
+    color: #fff;
+    font-weight: 600;
+}
+
+.lang-switch-btn:hover:not(.active) {
+    background: #f1f3f5;
+}
+
+/* Bangla mode: larger, clearer UI for shop owners */
+body.lang-bn {
+    font-size: 1.05rem;
+}
+
+body.lang-bn .sidebar-link {
+    font-size: 1.05rem;
+    padding: 0.75rem 1rem;
+}
+
+body.lang-bn .btn {
+    font-size: 1rem;
+    padding: 0.55rem 1.1rem;
+}
+
+body.lang-bn .btn-lg {
+    font-size: 1.15rem;
+    padding: 0.75rem 1.5rem;
+}
+
+body.lang-bn .form-control,
+body.lang-bn .form-select {
+    font-size: 1.05rem;
+    padding: 0.6rem 0.85rem;
+}
+
+body.lang-bn .form-select-lg,
+body.lang-bn .form-control-lg,
+body.lang-bn .input-group-lg > .form-control {
+    font-size: 1.15rem;
+    padding: 0.75rem 1rem;
+}
+
+body.lang-bn .table {
+    font-size: 1rem;
+}
+
+body.lang-bn .panel-title {
+    font-size: 1.1rem;
+}
+
+body.lang-bn .stat-value {
+    font-size: 1.6rem;
+}
+
+body.lang-bn .topbar-title {
+    font-size: 1.35rem;
+}
+
+/* Receipt print */
+@media print {
+    .sidebar, .topbar, .lang-toggle-group, .btn, nav, .no-print {
+        display: none !important;
+    }
+
+    .receipt-print {
+        display: block !important;
+    }
+}
+
+/* ── Dashboard: beginner-friendly UX ── */
+
+.btn-hero-sale {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    border: none;
+    border-radius: 1rem;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-hero-sale:hover {
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.45);
+}
+
+.btn-hero-sale i {
+    font-size: 1.6rem;
+}
+
+.hero-kbd {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.35rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-weight: 500;
+}
+
+.btn-quick-secondary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 1rem 0.75rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #334155;
+    background: #fff;
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    text-decoration: none;
+    text-align: center;
+    min-height: 88px;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.btn-quick-secondary:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: #eff6ff;
+}
+
+.btn-quick-secondary i {
+    font-size: 1.4rem;
+}
+
+.money-card {
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    color: #fff;
+}
+
+.money-card-green {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.money-card-blue {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.money-card-orange {
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    transition: transform 0.15s;
+}
+
+.money-card-orange:hover {
+    transform: translateY(-2px);
+}
+
+.money-card-status {
+    background: #fff;
+    border: 2px solid var(--border-color);
+    color: #0f172a;
+}
+
+.money-card-status.status-ok {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.money-card-status.status-shortage {
+    border-color: #dc2626;
+    background: #fef2f2;
+}
+
+.money-card-status.status-extra {
+    border-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.money-card-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0.95;
+    margin-bottom: 0.35rem;
+}
+
+.money-card-value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.money-card-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+    opacity: 0.9;
+}
+
+.cash-line {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.cash-line-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+}
+
+.cash-line-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.stat-compact {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.stat-compact-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+.stat-compact-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+}
+
+.post-sale-bar {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #f0fdf4, #eff6ff);
+    border: 2px solid #16a34a;
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.post-sale-bar .btn {
+    flex: 1;
+    min-width: 160px;
+}
+
+body.lang-bn .money-card-value {
+    font-size: 2.15rem;
+}
+
+body.lang-bn .btn-hero-sale {
+    font-size: 1.45rem;
+    padding: 1.4rem 1.5rem;
 }

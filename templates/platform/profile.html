@@ -1,0 +1,175 @@
+{% extends "layouts/platform.html" %}
+
+{% block title %}Platform Profile — POS System{% endblock %}
+{% block page_title %}Platform Profile{% endblock %}
+{% block page_subtitle %}
+<p class="platform-subtitle mb-0">Your account and shop owner login credentials</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-5">
+        <div class="platform-panel h-100">
+            <div class="platform-panel-header">
+                <h6 class="mb-0"><i class="bi bi-person-badge"></i> App Owner Account</h6>
+            </div>
+            <div class="platform-panel-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Name</dt>
+                    <dd class="col-sm-8 fw-semibold">{{ platform_user.full_name }}</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8">{{ platform_user.email }}</dd>
+
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8">
+                        {% if platform_user.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Member Since</dt>
+                    <dd class="col-sm-8">
+                        {% if platform_user.created_at %}
+                            {{ platform_user.created_at.strftime('%B %d, %Y') }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Last Login</dt>
+                    <dd class="col-sm-8">
+                        {% if platform_user.last_login %}
+                            {{ platform_user.last_login.strftime('%B %d, %Y at %I:%M %p') }}
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="platform-panel h-100">
+            <div class="platform-panel-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Shop Login Access</h6>
+            </div>
+            <div class="platform-panel-body">
+                <p class="text-muted small mb-0">
+                    Shop owners log in at <code>/login</code>. Passwords are stored when a shop is created
+                    or when the shop owner changes their password. Use this list to help shops recover access.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="platform-panel">
+    <div class="platform-panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h6 class="mb-0"><i class="bi bi-key"></i> Shop Owner Login Credentials</h6>
+        <span class="badge bg-secondary">{{ shop_credentials|length }} shop(s)</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover platform-table mb-0">
+            <thead>
+                <tr>
+                    <th>Shop</th>
+                    <th>Owner</th>
+                    <th>Login Email</th>
+                    <th>Login Password</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in shop_credentials %}
+                <tr>
+                    <td class="fw-semibold">{{ row.shop.shop_name }}</td>
+                    <td>{{ row.shop.owner_name }}</td>
+                    <td>
+                        {% if row.login_email %}
+                            <code>{{ row.login_email }}</code>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if row.login_password %}
+                            <span class="credential-password" data-password="{{ row.login_password }}">
+                                <code class="password-mask">••••••••</code>
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-1 btn-toggle-password" title="Show password">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-primary btn-copy-password" title="Copy password"
+                                    data-copy="{{ row.login_password }}">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        {% else %}
+                            <span class="text-muted small">Not recorded</span>
+                            <a href="{{ url_for('platform.reset_shop_admin_password', shop_id=row.shop.id) }}"
+                               class="btn btn-sm btn-outline-warning ms-1" title="Reset password">
+                                <i class="bi bi-key"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge bg-{{ row.shop.status_badge_class }}">{{ row.shop.status_label }}</span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ url_for('platform.view_shop', shop_id=row.shop.id) }}"
+                           class="btn btn-sm btn-outline-primary" title="View shop">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-5">
+                        No shops yet.
+                        <a href="{{ url_for('platform.create_shop') }}">Create a shop</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.btn-toggle-password').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var wrap = btn.closest('td').querySelector('.credential-password');
+        var code = wrap.querySelector('.password-mask');
+        var hidden = code.textContent.indexOf('•') >= 0;
+        if (hidden) {
+            code.textContent = wrap.dataset.password;
+            btn.querySelector('i').className = 'bi bi-eye-slash';
+        } else {
+            code.textContent = '••••••••';
+            btn.querySelector('i').className = 'bi bi-eye';
+        }
+    });
+});
+
+document.querySelectorAll('.btn-copy-password').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        var value = btn.dataset.copy || '';
+        if (!value) return;
+        navigator.clipboard.writeText(value).then(function () {
+            var icon = btn.querySelector('i');
+            icon.className = 'bi bi-check2';
+            setTimeout(function () { icon.className = 'bi bi-clipboard'; }, 1500);
+        });
+    });
+});
+</script>
+{% endblock %}

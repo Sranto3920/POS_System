@@ -28,10 +28,14 @@
                class="platform-nav-link {% if request.endpoint == 'platform.create_shop' %}active{% endif %}">
                 <i class="bi bi-plus-circle"></i> Create Shop
             </a>
+            <a href="{{ url_for('platform.profile') }}"
+               class="platform-nav-link {% if request.endpoint == 'platform.profile' %}active{% endif %}">
+                <i class="bi bi-person-badge"></i> Profile
+            </a>
         </nav>
 
         <div class="platform-sidebar-footer">
-            <form action="{{ url_for('platform_auth.logout') }}" method="POST">
+            <form action="{{ url_for('owner_auth.logout') }}" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="platform-nav-link platform-logout w-100 border-0 bg-transparent">
                     <i class="bi bi-box-arrow-left"></i> Logout
@@ -51,10 +55,10 @@
                 <h1 class="platform-title">{% block page_title %}Platform Dashboard{% endblock %}</h1>
                 {% block page_subtitle %}{% endblock %}
             </div>
-            <div class="platform-user-badge">
+            <a href="{{ url_for('platform.profile') }}" class="platform-user-badge text-decoration-none">
                 <i class="bi bi-person-badge"></i>
                 {{ current_user.full_name }}
-            </div>
+            </a>
         </header>
 
         <main class="platform-content">

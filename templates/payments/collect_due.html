@@ -1,16 +1,16 @@
 {% extends "layouts/app.html" %}
 
-{% block title %}Collect Due — POS System{% endblock %}
-{% block page_title %}Collect Due{% endblock %}
-{% block page_subtitle %}<p class="topbar-subtitle mb-0">Search customers and collect outstanding invoice payments</p>{% endblock %}
+{% block title %}{{ t('payments.collect_due') }} — {{ t('app.name') }}{% endblock %}
+{% block page_title %}{{ t('payments.collect_due') }}{% endblock %}
+{% block page_subtitle %}<p class="topbar-subtitle mb-0" data-i18n="payments.collect_due_subtitle">{{ t('payments.collect_due_subtitle') }}</p>{% endblock %}
 
 {% block content %}
 <div class="panel-card mb-3">
     <div class="panel-header">
-        <h6 class="panel-title mb-0"><i class="bi bi-search"></i> Search Customer</h6>
+        <h6 class="panel-title mb-0"><i class="bi bi-search"></i> <span data-i18n="payments.search_customer">{{ t('payments.search_customer') }}</span></h6>
     </div>
     <div class="panel-body">
-        {% set placeholder = "Search by customer name, phone, or email..." %}
+        {% set placeholder = t('payments.search_placeholder') %}
         {% include "partials/search_form.html" %}
     </div>
 </div>
@@ -20,7 +20,11 @@
     <div class="panel-body">
         <div class="alert alert-info mb-0">
             <i class="bi bi-info-circle"></i>
-            {% if search_q %}No customers with due balances match your search.{% else %}No outstanding due invoices found.{% endif %}
+            {% if search_q %}
+            <span data-i18n="payments.no_due_match">{{ t('payments.no_due_match') }}</span>
+            {% else %}
+            <span data-i18n="payments.no_due_found">{{ t('payments.no_due_found') }}</span>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -36,7 +40,7 @@
             </div>
         </div>
         <div class="text-end">
-            <div class="small text-muted">Total Due</div>
+            <div class="small text-muted" data-i18n="customers.total_due">{{ t('customers.total_due') }}</div>
             <div class="fw-bold text-danger">{{ format_currency(item.total_due) }}</div>
         </div>
     </div>
@@ -44,19 +48,19 @@
         <table class="table table-hover dashboard-table mb-0">
             <thead>
                 <tr>
-                    <th>Invoice #</th>
-                    <th>Date</th>
-                    <th class="text-end">Original Total</th>
-                    <th class="text-end">Already Paid</th>
-                    <th class="text-end">Remaining Due</th>
-                    <th class="text-end" style="width: 220px;">Collect Payment</th>
+                    <th data-i18n="payments.invoice">{{ t('payments.invoice') }}</th>
+                    <th data-i18n="common.date">{{ t('common.date') }}</th>
+                    <th class="text-end" data-i18n="payments.original_total">{{ t('payments.original_total') }}</th>
+                    <th class="text-end" data-i18n="payments.already_paid">{{ t('payments.already_paid') }}</th>
+                    <th class="text-end" data-i18n="payments.remaining_due">{{ t('payments.remaining_due') }}</th>
+                    <th class="text-end" style="width: 280px;" data-i18n="payments.receive">{{ t('payments.receive') }}</th>
                 </tr>
             </thead>
             <tbody>
                 {% for invoice in item.unpaid_sales %}
                 <tr>
                     <td>#{{ invoice.sale.id }}</td>
-                    <td>{{ invoice.sale.sale_date.strftime('%b %d, %Y') if invoice.sale.sale_date else '—' }}</td>
+                    <td>{{ format_date_locale(invoice.sale.sale_date) if invoice.sale.sale_date else '—' }}</td>
                     <td class="text-end">{{ format_currency(invoice.sale.total_amount) }}</td>
                     <td class="text-end">{{ format_currency(invoice.paid_total) }}</td>
                     <td class="text-end fw-semibold text-danger">{{ format_currency(invoice.balance_due) }}</td>
@@ -64,17 +68,19 @@
                         <form method="POST" class="d-flex gap-2 justify-content-end align-items-center flex-wrap">
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <input type="hidden" name="sale_id" value="{{ invoice.sale.id }}">
-                            <select name="payment_method" class="form-select form-select-sm" style="width: 120px;" required>
+                            <select name="payment_method" class="form-select form-select-sm" style="width: 140px;" required>
                                 {% for method in payment_methods %}
                                 {% if method != 'Credit' %}
-                                <option value="{{ method }}" {% if method == 'Cash' %}selected{% endif %}>{{ method }}</option>
+                                <option value="{{ method }}" {% if method == 'Cash' %}selected{% endif %}>{{ translate_payment_method(method) }}</option>
                                 {% endif %}
                                 {% endfor %}
                             </select>
                             <input type="number" name="paid_amount" class="form-control form-control-sm text-end"
                                    style="width: 100px;" min="0.01" max="{{ invoice.balance_due }}" step="0.01"
                                    value="{{ invoice.balance_due }}" required>
-                            <button type="submit" class="btn btn-sm btn-primary">Collect</button>
+                            <button type="submit" class="btn btn-sm btn-primary btn-lg">
+                                <i class="bi bi-cash-coin"></i> <span data-i18n="payments.collect_btn">{{ t('payments.collect_btn') }}</span>
+                            </button>
                         </form>
                     </td>
                 </tr>
