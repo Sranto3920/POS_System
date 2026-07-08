@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import text
@@ -20,10 +20,8 @@ class CashService:
     def get_today_summary(self):
         today = date.today()
         daily = self._get_or_create_daily_cash(today)
-        self._apply_carry_forward_opening(today, daily)
 
         opening = Decimal(str(daily.opening_cash or 0))
-        carry_forward = Decimal(str(daily.carry_forward_cash or 0))
         new_sales_cash = self._cash_from_new_sales(today)
         due_collected_cash = self._cash_from_due_collections(today)
         expenses = self._today_expenses(today)
@@ -59,7 +57,6 @@ class CashService:
         return {
             "date": today,
             "opening_cash": opening,
-            "carry_forward_cash": carry_forward,
             "new_sales_cash": new_sales_cash,
             "due_collected_cash": due_collected_cash,
             "total_received": total_received,
@@ -105,7 +102,6 @@ class CashService:
         self,
         user_id,
         opening_cash=None,
-        carry_forward_cash=None,
         actual_cash=None,
         supplier_payments=None,
         cash_withdrawals=None,
@@ -116,8 +112,6 @@ class CashService:
 
         if opening_cash is not None:
             daily.opening_cash = Decimal(str(opening_cash))
-        if carry_forward_cash is not None:
-            daily.carry_forward_cash = Decimal(str(carry_forward_cash))
         if supplier_payments is not None:
             daily.supplier_payments = Decimal(str(supplier_payments))
         if cash_withdrawals is not None:
@@ -159,18 +153,6 @@ class CashService:
             raise ValueError("Expense not found.")
         db.session.delete(expense)
         db.session.commit()
-
-    def _apply_carry_forward_opening(self, cash_date, daily):
-        """If today has no opening set, use yesterday's carry forward."""
-        if Decimal(str(daily.opening_cash or 0)) > 0:
-            return
-        yesterday = cash_date - timedelta(days=1)
-        prev = DailyCash.query.filter_by(
-            shop_id=self.shop_id, cash_date=yesterday
-        ).first()
-        if prev and Decimal(str(prev.carry_forward_cash or 0)) > 0:
-            daily.opening_cash = prev.carry_forward_cash
-            db.session.commit()
 
     def _get_or_create_daily_cash(self, cash_date):
         daily = DailyCash.query.filter_by(

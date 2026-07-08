@@ -402,10 +402,10 @@ def ensure_daily_cash_columns():
 
     columns = {column["name"].lower() for column in inspector.get_columns("DailyCash")}
 
-    if "carry_forward_cash" not in columns:
+    if "carry_forward_cash" in columns:
         db.session.execute(
             text(
-                "ALTER TABLE DailyCash ADD COLUMN carry_forward_cash DECIMAL(10,2) NOT NULL DEFAULT 0"
+                "ALTER TABLE DailyCash DROP COLUMN carry_forward_cash"
             )
         )
         db.session.commit()

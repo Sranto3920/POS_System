@@ -157,8 +157,6 @@
   "dashboard.perfect": "Perfect",
   "dashboard.enter_actual_cash": "Enter cash in drawer",
   "dashboard.shortcut_new_sale": "F2",
-  "dashboard.carry_forward_cash": "Carry Forward Cash",
-  "dashboard.carry_forward_hint": "Cash left in drawer for next day — becomes tomorrow's opening cash",
   "dashboard.expense_reason_placeholder": "e.g. tea expense, delivery charge",
 
   "sales.title": "Sales",

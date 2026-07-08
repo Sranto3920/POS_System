@@ -31,7 +31,6 @@ def dashboard():
                     return redirect(url_for("dashboard.dashboard"))
 
                 opening = request.form.get("opening_cash", "0")
-                carry_forward = request.form.get("carry_forward_cash", "0")
                 actual = request.form.get("actual_cash")
                 supplier = request.form.get("supplier_payments", "0")
                 withdrawals = request.form.get("cash_withdrawals", "0")
@@ -39,7 +38,6 @@ def dashboard():
                 cash_service.save_daily_cash(
                     current_user.id,
                     opening_cash=opening,
-                    carry_forward_cash=carry_forward,
                     actual_cash=actual if actual != "" else None,
                     supplier_payments=supplier,
                     cash_withdrawals=withdrawals,

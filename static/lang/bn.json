@@ -157,8 +157,6 @@
   "dashboard.perfect": "নিখুঁত",
   "dashboard.enter_actual_cash": "ক্যাশে থাকা টাকা লিখুন",
   "dashboard.shortcut_new_sale": "F2",
-  "dashboard.carry_forward_cash": "আগামী দিনের জন্য ক্যাশ",
-  "dashboard.carry_forward_hint": "দোকান বন্ধের সময় ড্রয়ারে রাখা টাকা — পরের দিন শুরুর ক্যাশ হিসেবে যাবে",
   "dashboard.expense_reason_placeholder": "যেমন: চা খরচ, ডেলিভারি খরচ",
 
   "sales.title": "বিক্রয়",

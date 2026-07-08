@@ -206,12 +206,6 @@
             </div>
             <div class="col-6 col-md-4 col-lg-2">
                 <div class="cash-line">
-                    <div class="cash-line-label" data-i18n="dashboard.carry_forward_cash">{{ t('dashboard.carry_forward_cash') }}</div>
-                    <div class="cash-line-value text-info">{{ format_currency(cash.carry_forward_cash) }}</div>
-                </div>
-            </div>
-            <div class="col-6 col-md-4 col-lg-2">
-                <div class="cash-line">
                     <div class="cash-line-label" data-i18n="dashboard.new_sales_cash">{{ t('dashboard.new_sales_cash') }}</div>
                     <div class="cash-line-value text-success">{{ format_currency(cash.new_sales_cash) }}</div>
                 </div>
@@ -258,13 +252,6 @@
                 <label class="form-label" data-i18n="dashboard.opening_cash">{{ t('dashboard.opening_cash') }}</label>
                 <input type="number" name="opening_cash" class="form-control form-control-lg" min="0" step="0.01"
                        value="{{ cash.opening_cash }}">
-            </div>
-            <div class="col-6 col-md-3 col-lg-2">
-                <label class="form-label" data-i18n="dashboard.carry_forward_cash">{{ t('dashboard.carry_forward_cash') }}</label>
-                <input type="number" name="carry_forward_cash" class="form-control form-control-lg" min="0" step="0.01"
-                       value="{{ cash.carry_forward_cash }}"
-                       title="{{ t('dashboard.carry_forward_hint') }}">
-                <div class="form-text" data-i18n="dashboard.carry_forward_hint">{{ t('dashboard.carry_forward_hint') }}</div>
             </div>
             <div class="col-6 col-md-3 col-lg-2">
                 <label class="form-label" data-i18n="dashboard.supplier_payments">{{ t('dashboard.supplier_payments') }}</label>

@@ -10,7 +10,6 @@ class DailyCash(db.Model):
     shop_id = db.Column(db.Integer, db.ForeignKey("Shops.shop_id"), nullable=False)
     cash_date = db.Column(db.Date, nullable=False)
     opening_cash = db.Column(db.Numeric(10, 2), nullable=False, default=0)
-    carry_forward_cash = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     supplier_payments = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     cash_withdrawals = db.Column(db.Numeric(10, 2), nullable=False, default=0)
     actual_cash = db.Column(db.Numeric(10, 2), nullable=True)
